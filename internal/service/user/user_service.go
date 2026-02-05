@@ -10,6 +10,7 @@ import (
 	"minichat/internal/req"
 	jwtutil "minichat/util/jwt"
 	crypto "minichat/util/password"
+	"minichat/util/snowflake"
 	"time"
 )
 
@@ -34,8 +35,10 @@ func (u UserService) Register(ctx context.Context, in req.RegisterReq) error {
 	if err != nil {
 		return err
 	}
+	//
+	username := snowflake.GenStringID()
 	newUser := &model.User{
-		Username:  in.Username,
+		Username:  username,
 		Telephone: in.Telephone,
 		Password:  pwd,
 		Nickname:  in.Nickname,

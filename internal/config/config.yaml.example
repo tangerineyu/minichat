@@ -14,10 +14,8 @@ logger:
 
 db:
   # 目前项目内置 OpenForDev() 走 sqlite，这里先把 dsn 留给后续扩展
-  # driver: "sqlite"
-  # dsn: "minichat.db"
-  driver: "mysql"
-  dsn: "root:123456@tcp(127.0.0.1:3306)/minichat?charset=utf8mb4&parseTime=True&loc=Local"
+  driver: "sqlite"
+  dsn: "minichat.db"
 
 jwt:
   # 生产环境请用环境变量覆盖 MINICHAT_JWT_SECRET

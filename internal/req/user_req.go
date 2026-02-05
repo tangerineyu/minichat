@@ -3,7 +3,7 @@ package req
 import "minichat/internal/model"
 
 type RegisterReq struct {
-	Username  string `json:"username"`
+	//Username  string `json:"username"`
 	Telephone string `json:"telephone"`
 	Password  string `json:"password"`
 	Nickname  string `json:"nickname"`

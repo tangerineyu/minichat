@@ -9,3 +9,6 @@
 {"level":"INFO","ts":"2026-02-03T17:52:17.075+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
 {"level":"INFO","ts":"2026-02-03T17:53:23.291+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
 {"level":"INFO","ts":"2026-02-04T14:16:45.021+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-05T11:06:28.189+0800","caller":"cmd/main.go:48","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-05T14:21:44.318+0800","caller":"cmd/main.go:46","msg":"http server starting","addr":":8080","mode":"debug"}
+{"level":"INFO","ts":"2026-02-05T14:29:01.143+0800","caller":"cmd/main.go:47","msg":"http server starting","addr":":8080","mode":"debug"}

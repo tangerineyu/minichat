@@ -17,4 +17,5 @@ type User struct {
 	UsernameChangedAt *time.Time `gorm:"column:username_changed_at;comment:username上次修改时间" json:"username_changed_at"`
 }
 
-func (User) TableName() string { return "user" }
+// TableName 定义表名。
+func (User) TableName() string { return "users" }
