@@ -1,0 +1,11 @@
+{"level":"DEBUG","ts":"2026-02-01T21:29:42.119+0800","caller":"cmd/main.go:14","msg":"debug msg"}
+{"level":"INFO","ts":"2026-02-01T21:29:42.119+0800","caller":"cmd/main.go:15","msg":"info msg"}
+{"level":"WARN","ts":"2026-02-01T21:29:42.119+0800","caller":"cmd/main.go:16","msg":"warn msg"}
+{"level":"ERROR","ts":"2026-02-01T21:29:42.119+0800","caller":"cmd/main.go:17","msg":"error msg","error":"error string","stacktrace":"main.main\n\t/home/yu/gogogo/minichat/cmd/main.go:17\nruntime.main\n\t/home/yu/sdk/go/src/runtime/proc.go:285"}
+{"level":"INFO","ts":"2026-02-01T21:29:42.119+0800","caller":"cmd/main.go:19","msg":"用户登录","username":"testuser","login_attempts":3,"backoff":1}
+{"level":"INFO","ts":"2026-02-03T17:30:40.035+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-03T17:49:36.095+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-03T17:49:50.609+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-03T17:52:17.075+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-03T17:53:23.291+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
+{"level":"INFO","ts":"2026-02-04T14:16:45.021+0800","caller":"cmd/main.go:35","msg":"http server starting","addr":":8080"}
