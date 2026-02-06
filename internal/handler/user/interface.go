@@ -13,5 +13,7 @@ type UserHandlerInterface interface {
 	// 更改密码
 	ChangePassword(c *gin.Context)
 	// 更改用户名
-	ChangeUsername(c *gin.Context)
+	ChangeUserId(c *gin.Context)
+	// 获取用户信息
+	GetUserInfo(c *gin.Context)
 }

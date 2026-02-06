@@ -32,9 +32,9 @@ func (r *UserRepo) GetUserById(ctx context.Context, id int64) (*model.User, erro
 	return &user, nil
 }
 
-func (r *UserRepo) GetUserByUsername(ctx context.Context, username string) (*model.User, error) {
+func (r *UserRepo) GetUserByUserId(ctx context.Context, userId string) (*model.User, error) {
 	var user model.User
-	if err := r.db.WithContext(ctx).Where("username = ?", username).First(&user).Error; err != nil {
+	if err := r.db.WithContext(ctx).Where("user_id = ?", userId).First(&user).Error; err != nil {
 		return nil, err
 	}
 	return &user, nil
@@ -67,11 +67,11 @@ func (r *UserRepo) ChangePassword(ctx context.Context, userID int64, newHashedPa
 		Update("password", newHashedPassword).Error
 }
 
-func (r *UserRepo) ChangeUsername(ctx context.Context, username string, usernameChangedAt *time.Time) error {
+func (r *UserRepo) ChangeUserId(ctx context.Context, id int64, newUserId string, userIdChangedAt *time.Time) error {
 	return r.db.WithContext(ctx).Model(&model.User{}).
-		Where("username = ?", username).
+		Where("id = ?", id).
 		Updates(map[string]interface{}{
-			"username":            username,
-			"username_changed_at": usernameChangedAt,
+			"user_id":            newUserId,
+			"user_id_changed_at": userIdChangedAt,
 		}).Error
 }

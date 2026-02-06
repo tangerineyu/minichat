@@ -8,7 +8,9 @@ import (
 func setupUserRoutes(appRouterGroup *AppRouterGroup, h *di.HandlerProvider) {
 	appRouterGroup.PublicRouterGroup.POST("/login", h.UserHandler.Login)
 	appRouterGroup.PublicRouterGroup.POST("/register", h.UserHandler.Register)
+
 	appRouterGroup.AuthRouterGroup.PUT("/user/update/info", h.UserHandler.UpdateUserInfo)
 	appRouterGroup.AuthRouterGroup.PUT("/user/update/password", h.UserHandler.ChangePassword)
-	appRouterGroup.AuthRouterGroup.PUT("/user/update/username", h.UserHandler.ChangeUsername)
+	appRouterGroup.AuthRouterGroup.PUT("/user/update/userid", h.UserHandler.ChangeUserId)
+	appRouterGroup.AuthRouterGroup.GET("/user/info", h.UserHandler.GetUserInfo)
 }

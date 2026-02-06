@@ -83,16 +83,36 @@ func (h *UserHandler) ChangePassword(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "密码修改成功"})
 
 }
-func (h *UserHandler) ChangeUsername(c *gin.Context) {
-	var in req.ChangeUsernameReq
+func (h *UserHandler) ChangeUserId(c *gin.Context) {
+	var in req.ChangeUserIdReq
 	if err := c.ShouldBindJSON(&in); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
 	}
-	userId, _ := c.Get("id")
-	id := userId.(int64)
-	if err := h.userService.ChangeUsername(c, id, in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "username修改失败", "error": err.Error()})
+	Id, _ := c.Get("id")
+	id := Id.(int64)
+	if err := h.userService.ChangeUserId(c, id, in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "userId修改失败", "error": err.Error()})
 		return
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "username修改成功"})
+}
+
+func (h *UserHandler) GetUserInfo(c *gin.Context) {
+	userId, exists := c.Get("id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		return
+	}
+	id := userId.(int64)
+	userInfo, err := h.userService.GetUserInfo(c, id)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "获取用户信息失败", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"msg":  "ok",
+		"data": userInfo,
+	})
+
 }

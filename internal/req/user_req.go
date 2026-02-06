@@ -13,13 +13,13 @@ type RegisterReq struct {
 // Login 支持 username 或 telephone 二选一
 // Password 必填
 type LoginReq struct {
-	Username  string `json:"username"`
+	UserId    string `json:"user_id"`
 	Telephone string `json:"telephone"`
 	Password  string `json:"password"`
 }
 type UpdateUserReq struct {
-	Nickname string `json:"nickname"`
-	Avatar   string `json:"avatar"`
+	Nickname *string `json:"nickname"`
+	Avatar   *string `json:"avatar"`
 }
 
 // 更改密码
@@ -27,8 +27,8 @@ type ChangePasswordReq struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
 }
-type ChangeUsernameReq struct {
-	NewUsername string `json:"username"`
+type ChangeUserIdReq struct {
+	NewUserId string `json:"user_id"`
 }
 type AuthResponse struct {
 	Token string     `json:"token"`

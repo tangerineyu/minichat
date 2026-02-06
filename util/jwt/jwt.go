@@ -66,7 +66,7 @@ func CreateClaims(user model.User, tokenType string, ttl time.Duration) MyClaims
 	now := time.Now()
 	return MyClaims{
 		Id:        user.ID,
-		Username:  user.Username,
+		Username:  user.UserId,
 		TokenType: tokenType,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(ttl)),
@@ -149,6 +149,6 @@ func RefreshTokens(refreshToken string) (string, string, error) {
 	if err != nil {
 		return "", "", err
 	}
-	user := model.User{ID: claims.Id, Username: claims.Username}
+	user := model.User{ID: claims.Id, UserId: claims.Username}
 	return GenerateToken(user)
 }

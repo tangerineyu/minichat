@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	commonModel "minichat/internal/common"
+	"minichat/internal/handler/response"
 	"minichat/internal/model"
 	repo "minichat/internal/repo/user"
 	"minichat/internal/req"
@@ -38,7 +39,7 @@ func (u UserService) Register(ctx context.Context, in req.RegisterReq) error {
 	//
 	username := snowflake.GenStringID()
 	newUser := &model.User{
-		Username:  username,
+		UserId:    username,
 		Telephone: in.Telephone,
 		Password:  pwd,
 		Nickname:  in.Nickname,
@@ -56,10 +57,17 @@ func (u UserService) Login(ctx context.Context, in req.LoginReq) (string, string
 	if len(in.Password) < 6 {
 		return "", "", errors.New(commonModel.PASSWORD_LENGTH_LESS_SIX)
 	}
-	if in.Username == "" {
-		return "", "", errors.New(commonModel.USERNAME_IS_EMPTY)
+	if in.UserId == "" && in.Telephone == "" {
+		return "", "", errors.New(commonModel.USERID_AND_TELEPHONE_IS_EMPTY)
 	}
-	user, err := u.userRepo.GetUserByUsername(ctx, in.Username)
+	var user *model.User
+	var err error
+	if in.Telephone != "" {
+		user, err = u.userRepo.GetUserByTelephone(ctx, in.Telephone)
+	} else {
+		user, err = u.userRepo.GetUserByUserId(ctx, in.UserId)
+	}
+	//user, err := u.userRepo.GetUserByUserId(ctx, in.UserId)
 	if err != nil {
 		return "", "", errors.New("查询用户失败：" + err.Error())
 	}
@@ -79,8 +87,12 @@ func (u UserService) UpdateUserInfo(ctx context.Context, userId int64, in req.Up
 	if err != nil {
 		return errors.New("查询用户失败：" + err.Error())
 	}
-	user.Nickname = in.Nickname
-	user.Avatar = in.Avatar
+	if in.Nickname != nil {
+		user.Nickname = *in.Nickname
+	}
+	if in.Avatar != nil {
+		user.Avatar = *in.Avatar
+	}
 
 	if err := u.userRepo.UpdateUser(ctx, user); err != nil {
 		return errors.New("更新用户信息失败：" + err.Error())
@@ -97,7 +109,7 @@ func (u UserService) ChangePassword(ctx context.Context, id int64, in req.Change
 	if !crypto.CheckPasswordHash(in.OldPassword, user.Password) {
 		return errors.New(commonModel.PASSWORD_ERROR)
 	}
-	if in.NewPassword != in.OldPassword {
+	if in.NewPassword == in.OldPassword {
 		return errors.New("新密码不能与旧密码相同")
 	}
 	newPasswordHash, err := crypto.HashPassword(in.NewPassword)
@@ -109,27 +121,41 @@ func (u UserService) ChangePassword(ctx context.Context, id int64, in req.Change
 
 const UsernameChangeIntervalDays = 180 * 24 * time.Hour
 
-func (u UserService) ChangeUsername(ctx context.Context, id int64, in req.ChangeUsernameReq) error {
+func (u UserService) ChangeUserId(ctx context.Context, id int64, in req.ChangeUserIdReq) error {
 	user, err := u.userRepo.GetUserById(ctx, id)
 	if err != nil {
 		return errors.New("查询用户失败：" + err.Error())
 	}
 	// 检查上次更改过了多长时间
-	if user.UsernameChangedAt != nil {
-		gap := time.Since(*user.UsernameChangedAt)
+	if user.UserIdChangedAt != nil {
+		gap := time.Since(*user.UserIdChangedAt)
 		if gap < UsernameChangeIntervalDays {
 			remainingDays := int((UsernameChangeIntervalDays - gap).Hours() / 24)
 			return fmt.Errorf("短期内只能更改一次，请在 %d 天后再试", remainingDays)
 		}
 	}
 	// 检查新用户名是否已存在
-	existsUser, err := u.userRepo.GetUserByUsername(ctx, in.NewUsername)
+	existsUser, err := u.userRepo.GetUserByUserId(ctx, in.NewUserId)
 	if err == nil && existsUser.ID != user.ID {
 		return errors.New(commonModel.USERNAME_HAS_EXISTS)
 	}
 	now := time.Now()
-	user.UsernameChangedAt = &now
-	return u.userRepo.ChangeUsername(ctx, in.NewUsername, user.UsernameChangedAt)
+	user.UserIdChangedAt = &now
+	return u.userRepo.ChangeUserId(ctx, id, in.NewUserId, user.UserIdChangedAt)
+}
+
+func (u UserService) GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error) {
+	user, err := u.userRepo.GetUserById(ctx, id)
+	if err != nil {
+		return response.UserInfoResponse{}, errors.New("查询用户信息失败：" + err.Error())
+	}
+	return response.UserInfoResponse{
+		UserId:    user.UserId,
+		Nickname:  user.Nickname,
+		Avatar:    user.Avatar,
+		Telephone: user.Telephone,
+	}, nil
+
 }
 
 func NewUserService(userRepo repo.UserRepoInterface) UserServiceInterface {
