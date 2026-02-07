@@ -2,17 +2,16 @@ package model
 
 import "time"
 
-// Friend 表示好友关系（推荐插入两条：A->B 与 B->A）
-// Status: 0申请中, 1已通过, 2黑名单
-type Friend struct {
-	ID       int64  `gorm:"primaryKey;type:BIGINT" json:"id"`
-	UserID   int64  `gorm:"type:BIGINT;not null;index;uniqueIndex:uk_user_friend" json:"user_id"`
-	FriendID int64  `gorm:"type:BIGINT;not null;index;uniqueIndex:uk_user_friend" json:"friend_id"`
-	Remark   string `gorm:"type:VARCHAR(64)" json:"remark"`
-	Status   int8   `gorm:"type:TINYINT;not null;default:0;comment:0申请中/1已通过/2黑名单" json:"status"`
+type FriendApply struct {
+	ID int64 `gorm:"primaryKey;type:BIGINT" json:"id"`
 
-	CreatedAt time.Time `gorm:"type:DATETIME;not null;autoCreateTime" json:"created_at"`
-	UpdatedAt time.Time `gorm:"type:DATETIME;not null;autoUpdateTime" json:"updated_at"`
+	FromUserId string `gorm:"not null;index:idx_from_user,priority:1" json:"from_user_id"`
+	ToUserId   string `gorm:"not null;index:idx_to_user,priority:2" json:"to_user_id"`
+	ApplyMsg   string `gorm:"type:VARCHAR(255)" json:"apply_msg"`
+	Status     int8   `gorm:"type:TINYINT;not null;default:0;comment:0申请中/1已通过/2拒绝" json:"status"`
+
+	CreatedAt time.Time `gorm:"autoCreateTime" json:"created_at"`
+	UpdatedAt time.Time `gorm:"autoUpdateTime" json:"updated_at"`
 }
 
-func (Friend) TableName() string { return "friends" }
+func (FriendApply) TableName() string { return "friend_apply" }

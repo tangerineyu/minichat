@@ -1,7 +1,11 @@
 package di
 
-import userHandler "minichat/internal/handler/user"
+import (
+	friendApplyHandler "minichat/internal/handler/friend_apply"
+	userHandler "minichat/internal/handler/user"
+)
 
 type HandlerProvider struct {
-	UserHandler *userHandler.UserHandler
+	UserHandler        *userHandler.UserHandler
+	FriendApplyHandler *friendApplyHandler.FriendApplyHandler
 }

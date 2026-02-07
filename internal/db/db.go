@@ -50,7 +50,10 @@ func InitDB() (*gorm.DB, error) {
 	}
 
 	// 自动迁移表结构
-	if err := db.AutoMigrate(&model.User{}); err != nil {
+	if err := db.AutoMigrate(
+		&model.User{},
+		&model.FriendApply{},
+	); err != nil {
 		return nil, err
 	}
 

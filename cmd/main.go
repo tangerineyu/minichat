@@ -4,10 +4,7 @@ import (
 	"minichat/internal/config"
 	"minichat/internal/db"
 	"minichat/internal/di"
-	userHandler "minichat/internal/handler/user"
-	"minichat/internal/repo/user"
 	"minichat/internal/router"
-	userService "minichat/internal/service/user"
 	"minichat/util/logger"
 
 	"github.com/gin-gonic/gin"
@@ -35,11 +32,10 @@ func main() {
 		zap.L().Fatal("open db failed", zap.Error(err))
 	}
 
-	repo := user.NewUserRepo(database)
-	svc := userService.NewUserService(repo)
-	h := userHandler.NewUserHandler(svc)
-
-	providers := &di.HandlerProvider{UserHandler: h}
+	providers, err := di.InitializeApp(database)
+	if err != nil {
+		zap.L().Fatal("initialize app failed", zap.Error(err))
+	}
 
 	r := gin.New()
 	router.SetupRouter(r, providers)

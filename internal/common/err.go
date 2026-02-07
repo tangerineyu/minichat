@@ -7,3 +7,7 @@ const (
 	USERID_AND_TELEPHONE_IS_EMPTY = "用户名和手机号不能同时为空"
 	PASSWORD_ERROR                = "密码错误"
 )
+
+const (
+	APPLY_FRIEND_SELF = "不能添加自己为好友"
+)
