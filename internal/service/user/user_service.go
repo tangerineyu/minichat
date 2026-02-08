@@ -19,8 +19,34 @@ type UserService struct {
 	userRepo repo.UserRepoInterface
 }
 
+func (u *UserService) CancelAccount(ctx context.Context, id int64, password string) error {
+	if len(password) < 6 {
+		return errors.New(commonModel.PASSWORD_LENGTH_LESS_SIX)
+	}
+	user, err := u.userRepo.GetUserById(ctx, id)
+	if err != nil {
+		return errors.New("查询用户失败：" + err.Error())
+	}
+	if user.Status == 2 {
+		return errors.New("账号已注销")
+	}
+	// 校验密码
+	if !crypto.CheckPasswordHash(password, user.Password) {
+		return errors.New(commonModel.PASSWORD_ERROR)
+	}
+
+	user.Status = 2
+	// 为了避免手机号被占用，注销账号时在手机号前添加前缀，并加上时间戳
+	user.Telephone = fmt.Sprintf("canceled_%d_%s", time.Now().Unix(), user.Telephone)
+	// 注销账号时将用户名改为 "已注销用户"，头像改为默认头像
+	user.Nickname = "已注销用户"
+	user.Avatar = "default_avatar.png"
+
+	return u.userRepo.UpdateUser(ctx, user)
+}
+
 // 用户注册
-func (u UserService) Register(ctx context.Context, in req.RegisterReq) error {
+func (u *UserService) Register(ctx context.Context, in req.RegisterReq) error {
 	if in.Telephone == "" || len(in.Password) < 6 {
 		return errors.New("参数错误")
 	}
@@ -53,7 +79,7 @@ func (u UserService) Register(ctx context.Context, in req.RegisterReq) error {
 }
 
 // 用户登录
-func (u UserService) Login(ctx context.Context, in req.LoginReq) (string, string, error) {
+func (u *UserService) Login(ctx context.Context, in req.LoginReq) (string, string, error) {
 	if len(in.Password) < 6 {
 		return "", "", errors.New(commonModel.PASSWORD_LENGTH_LESS_SIX)
 	}
@@ -82,7 +108,7 @@ func (u UserService) Login(ctx context.Context, in req.LoginReq) (string, string
 	return access, refresh, nil
 }
 
-func (u UserService) UpdateUserInfo(ctx context.Context, userId int64, in req.UpdateUserReq) error {
+func (u *UserService) UpdateUserInfo(ctx context.Context, userId int64, in req.UpdateUserReq) error {
 	user, err := u.userRepo.GetUserById(ctx, userId)
 	if err != nil {
 		return errors.New("查询用户失败：" + err.Error())
@@ -100,7 +126,7 @@ func (u UserService) UpdateUserInfo(ctx context.Context, userId int64, in req.Up
 	return nil
 }
 
-func (u UserService) ChangePassword(ctx context.Context, id int64, in req.ChangePasswordReq) error {
+func (u *UserService) ChangePassword(ctx context.Context, id int64, in req.ChangePasswordReq) error {
 	user, err := u.userRepo.GetUserById(ctx, id)
 	if err != nil {
 		return errors.New("查询用户失败：" + err.Error())
@@ -121,7 +147,7 @@ func (u UserService) ChangePassword(ctx context.Context, id int64, in req.Change
 
 const UsernameChangeIntervalDays = 180 * 24 * time.Hour
 
-func (u UserService) ChangeUserId(ctx context.Context, id int64, in req.ChangeUserIdReq) error {
+func (u *UserService) ChangeUserId(ctx context.Context, id int64, in req.ChangeUserIdReq) error {
 	user, err := u.userRepo.GetUserById(ctx, id)
 	if err != nil {
 		return errors.New("查询用户失败：" + err.Error())
@@ -144,7 +170,7 @@ func (u UserService) ChangeUserId(ctx context.Context, id int64, in req.ChangeUs
 	return u.userRepo.ChangeUserId(ctx, id, in.NewUserId, user.UserIdChangedAt)
 }
 
-func (u UserService) GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error) {
+func (u *UserService) GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error) {
 	user, err := u.userRepo.GetUserById(ctx, id)
 	if err != nil {
 		return response.UserInfoResponse{}, errors.New("查询用户信息失败：" + err.Error())

@@ -6,5 +6,8 @@ import (
 )
 
 type FriendApplyServiceInterface interface {
-	SendFriendApply(ctx context.Context, fromUserId string, in req.SendFriendApplyReq) error
+	// 发送好友申请
+	SendFriendApply(ctx context.Context, fromUserId int64, in req.SendFriendApplyReq) error
+	// 处理好友申请，接受或拒绝
+	DealWithFriendApply(ctx context.Context, Id int64, in req.DealWithFriendApplyReq) error
 }

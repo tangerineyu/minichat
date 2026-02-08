@@ -53,6 +53,7 @@ func InitDB() (*gorm.DB, error) {
 	if err := db.AutoMigrate(
 		&model.User{},
 		&model.FriendApply{},
+		&model.Friend{},
 	); err != nil {
 		return nil, err
 	}

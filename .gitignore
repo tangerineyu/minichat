@@ -1,4 +1,4 @@
 internal/config/config.yaml
 logs
 .idea
-minichat/.env
+.env

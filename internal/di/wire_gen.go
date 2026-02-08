@@ -8,10 +8,13 @@ package di
 
 import (
 	"gorm.io/gorm"
+	friend3 "minichat/internal/handler/friend"
 	friend_apply3 "minichat/internal/handler/friend_apply"
 	user3 "minichat/internal/handler/user"
+	"minichat/internal/repo/friend"
 	"minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/user"
+	friend2 "minichat/internal/service/friend"
 	friend_apply2 "minichat/internal/service/friend_apply"
 	user2 "minichat/internal/service/user"
 )
@@ -23,11 +26,15 @@ func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	userServiceInterface := user2.NewUserService(userRepoInterface)
 	userHandler := user3.NewUserHandler(userServiceInterface)
 	friendApplyRepoInterface := friend_apply.NewFriendApplyRepo(database)
-	friendApplyServiceInterface := friend_apply2.NewFriendApplyService(friendApplyRepoInterface)
+	friendRepoInterface := friend.NewFriendRepo(database)
+	friendApplyServiceInterface := friend_apply2.NewFriendApplyService(friendApplyRepoInterface, friendRepoInterface, userRepoInterface)
 	friendApplyHandler := friend_apply3.NewUserHandler(friendApplyServiceInterface)
+	friendServiceInterface := friend2.NewFriendService(friendRepoInterface)
+	friendHandler := friend3.NewFriendHandler(friendServiceInterface)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,
 		FriendApplyHandler: friendApplyHandler,
+		FriendHandler:      friendHandler,
 	}
 	return handlerProvider, nil
 }

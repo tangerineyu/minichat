@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var _ UserHandlerInterface = (*UserHandler)(nil)
+
 type UserHandler struct {
 	userService user.UserServiceInterface
 }
@@ -114,5 +116,23 @@ func (h *UserHandler) GetUserInfo(c *gin.Context) {
 		"msg":  "ok",
 		"data": userInfo,
 	})
+}
+func (h *UserHandler) CancelAccount(c *gin.Context) {
+	var in req.CancelAccountReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		return
+	}
 
+	Id, exists := c.Get("id")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		return
+	}
+	id := Id.(int64)
+	if err := h.userService.CancelAccount(c.Request.Context(), id, in.Password); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "用户注销失败", "error": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "用户注销成功"})
 }

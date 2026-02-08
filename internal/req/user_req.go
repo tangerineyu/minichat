@@ -17,6 +17,7 @@ type LoginReq struct {
 	Telephone string `json:"telephone"`
 	Password  string `json:"password"`
 }
+
 type UpdateUserReq struct {
 	Nickname *string `json:"nickname"`
 	Avatar   *string `json:"avatar"`
@@ -26,6 +27,10 @@ type UpdateUserReq struct {
 type ChangePasswordReq struct {
 	OldPassword string `json:"old_password"`
 	NewPassword string `json:"new_password"`
+}
+
+type CancelAccountReq struct {
+	Password string `json:"password"`
 }
 type ChangeUserIdReq struct {
 	NewUserId string `json:"user_id"`

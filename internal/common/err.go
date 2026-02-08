@@ -9,5 +9,9 @@ const (
 )
 
 const (
-	APPLY_FRIEND_SELF = "不能添加自己为好友"
+	APPLY_FRIEND_SELF        = "不能添加自己为好友"
+	INVALID_APPLY_ID         = "无效的申请ID"
+	APPLY_NOT_FOUND          = "申请不存在"
+	APPLY_NOT_BELONG_TO_USER = "申请不属于该用户, 无权处理"
+	APPLY_ALREADY_DEAL       = "申请已被处理"
 )

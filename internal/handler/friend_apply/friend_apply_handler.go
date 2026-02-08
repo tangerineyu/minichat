@@ -9,8 +9,25 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+var _ FriendApplyHandlerInterface = (*FriendApplyHandler)(nil)
+
 type FriendApplyHandler struct {
 	friendApplyService friend_apply.FriendApplyServiceInterface
+}
+
+func (h *FriendApplyHandler) DealWithFriendApply(c *gin.Context) {
+	var in req.DealWithFriendApplyReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		return
+	}
+	Id := c.MustGet("id")
+
+	if err := h.friendApplyService.DealWithFriendApply(c.Request.Context(), Id.(int64), in); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "ok"})
 }
 
 func NewUserHandler(svc friend_apply.FriendApplyServiceInterface) *FriendApplyHandler {
@@ -33,7 +50,7 @@ func (h *FriendApplyHandler) SendFriendApply(c *gin.Context) {
 		return
 	}
 
-	if err := h.friendApplyService.SendFriendApply(c.Request.Context(), fromUserId.(string), in); err != nil {
+	if err := h.friendApplyService.SendFriendApply(c.Request.Context(), fromUserId.(int64), in); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
 		return
 	}

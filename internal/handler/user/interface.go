@@ -16,4 +16,6 @@ type UserHandlerInterface interface {
 	ChangeUserId(c *gin.Context)
 	// 获取用户信息
 	GetUserInfo(c *gin.Context)
+	// 用户注销
+	CancelAccount(c *gin.Context)
 }

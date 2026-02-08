@@ -19,4 +19,6 @@ type UserServiceInterface interface {
 	ChangeUserId(ctx context.Context, id int64, in req.ChangeUserIdReq) error
 	// 获取用户信息
 	GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error)
+	// 用户注销（需要二次密码校验）
+	CancelAccount(ctx context.Context, id int64, password string) error
 }
