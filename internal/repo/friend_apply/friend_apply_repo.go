@@ -18,16 +18,16 @@ type FriendApplyRepo struct {
 func (f *FriendApplyRepo) GetFriendApplyList(ctx context.Context, id int64) ([]*req.FriendApplyListReq, error) {
 	var list []*req.FriendApplyListReq
 	err := f.db.WithContext(ctx).Table("friend_apply").
-		Where("friend_apply.id as apply_id, "+
+		Select("friend_apply.id as apply_id, "+
 			"friend_apply.apply_msg as apply_msg, "+
 			"friend_apply.status as status, "+
 			"friend_apply.from_user_id as from_user_id, "+
-			"user.nickname as from_user_nickname"+
-			"user.avatar as from_user_avatar"+
+			"users.nickname as from_user_nickname, "+
+			"users.avatar as from_user_avatar, "+
 			"friend_apply.created_at as created_at").
-		Joins("left join users on friend_apply.from_user_id = user.id").
-		Where("friend_apply.apply_id = ?", id).
-		Order("created_at desc").
+		Joins("left join users on friend_apply.from_user_id = users.id").
+		Where("friend_apply.to_user_id = ?", id).
+		Order("friend_apply.created_at desc").
 		Scan(&list).Error
 	return list, err
 
