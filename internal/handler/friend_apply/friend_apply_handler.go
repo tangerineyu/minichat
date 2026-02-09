@@ -15,6 +15,22 @@ type FriendApplyHandler struct {
 	friendApplyService friend_apply.FriendApplyServiceInterface
 }
 
+func (h *FriendApplyHandler) GetFriendApplyList(c *gin.Context) {
+	id := c.GetInt64("id")
+	list, err := h.friendApplyService.GetFriendApply(c.Request.Context(), id)
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": err.Error()})
+		return
+	}
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"msg":  "ok",
+		"data": gin.H{
+			"list": list,
+		},
+	})
+}
+
 func (h *FriendApplyHandler) DealWithFriendApply(c *gin.Context) {
 	var in req.DealWithFriendApplyReq
 	if err := c.ShouldBindJSON(&in); err != nil {

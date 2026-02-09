@@ -8,6 +8,8 @@ import (
 	repo "minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/user"
 	"minichat/internal/req"
+
+	"go.uber.org/zap"
 )
 
 var _ FriendApplyServiceInterface = (*FriendApplyService)(nil)
@@ -16,6 +18,15 @@ type FriendApplyService struct {
 	friendApplyRepo repo.FriendApplyRepoInterface
 	friendRepo      friend_repo.FriendRepoInterface
 	userRepo        user.UserRepoInterface
+}
+
+func (s *FriendApplyService) GetFriendApply(ctx context.Context, id int64) ([]*req.FriendApplyListReq, error) {
+	list, err := s.friendApplyRepo.GetFriendApplyList(ctx, id)
+	if err != nil {
+		zap.L().Error("GetFriendApply", zap.Error(err))
+		return nil, errors.New("查询好友申请列表失败")
+	}
+	return list, nil
 }
 
 func (s *FriendApplyService) DealWithFriendApply(ctx context.Context, Id int64, in req.DealWithFriendApplyReq) error {
@@ -39,9 +50,18 @@ func (s *FriendApplyService) DealWithFriendApply(ctx context.Context, Id int64, 
 	if action == 2 {
 		return s.friendApplyRepo.UpdateApplyStatus(ctx, applyId, 2)
 	}
-	//TODO：同意好友申请后，添加好友关系
+	// 如果备注为空，默认使用对方的昵称作为备注
+	if in.Remark == "" {
+		user1, _ := s.userRepo.GetUserById(ctx, apply.ToUserId)
+		in.Remark = user1.Nickname
+	}
+	// 处理人对申请人的备注
+	accept2RequestRemark := in.Remark
+	user2, _ := s.userRepo.GetUserById(ctx, apply.FromUserId)
+	// 申请人对处理人的备注，申请人不在操作界面，直接使用处理人的昵称作为备注
+	request2AcceptRemark := user2.Nickname
 	//事务处理
-	return s.friendRepo.MakeFriends(ctx, applyId)
+	return s.friendRepo.MakeFriends(ctx, applyId, accept2RequestRemark, request2AcceptRemark)
 }
 
 func (s *FriendApplyService) SendFriendApply(ctx context.Context, fromUserId int64, in req.SendFriendApplyReq) error {

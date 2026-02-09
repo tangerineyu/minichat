@@ -11,7 +11,7 @@ type FriendRepo struct {
 	db *gorm.DB
 }
 
-func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64) error {
+func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64, a2rRemark, r2aRemark string) error {
 	// 这里可以使用事务来确保两个用户的好友关系同时创建成功
 	return f.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		var apply model.FriendApply
@@ -23,15 +23,17 @@ func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64) error {
 		if err := tx.Model(&apply).Update("status", 1).Error; err != nil {
 			return err
 		}
+
 		friend1 := &model.Friend{
 			UserId:   apply.FromUserId,
 			FriendId: apply.ToUserId,
-			// TODO: 可以设置备注，默认是好友的昵称
-			Status: 1,
+			Remark:   r2aRemark,
+			Status:   1,
 		}
 		friend2 := &model.Friend{
 			UserId:   apply.ToUserId,
 			FriendId: apply.FromUserId,
+			Remark:   a2rRemark,
 			Status:   1,
 		}
 		friends := []model.Friend{*friend1, *friend2}
