@@ -1,7 +1,7 @@
 package user
 
 import (
-	"net/http"
+	"minichat/internal/handler/response"
 
 	"minichat/internal/req"
 	"minichat/internal/service/user"
@@ -22,117 +22,122 @@ func NewUserHandler(svc user.UserServiceInterface) *UserHandler {
 func (h *UserHandler) Register(c *gin.Context) {
 	var in req.RegisterReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
 	if err := h.userService.Register(c.Request.Context(), in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		response.Fail(c, 400, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "ok"})
+	response.Success(c, nil)
 }
 
 func (h *UserHandler) Login(c *gin.Context) {
 	var in req.LoginReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
 
 	access, refresh, err := h.userService.Login(c.Request.Context(), in)
 	if err != nil {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": err.Error()})
+		response.Fail(c, 401, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "ok",
-		"data": gin.H{
-			"access_token":  access,
-			"refresh_token": refresh,
-		},
+	response.Success(c, gin.H{
+		"access_token":  access,
+		"refresh_token": refresh,
 	})
 }
 
 func (h *UserHandler) UpdateUserInfo(c *gin.Context) {
 	var in req.UpdateUserReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
+		return
 	}
 	userId, exists := c.Get("id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		response.Fail(c, 401, "unauthorized")
 		return
 	}
 	if err := h.userService.UpdateUserInfo(c.Request.Context(), userId.(int64), in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		response.Fail(c, 400, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "ok"})
+	response.Success(c, nil)
 }
+
 func (h *UserHandler) ChangePassword(c *gin.Context) {
 	var in req.ChangePasswordReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
-	}
-	userId, _ := c.Get("id")
-	id := userId.(int64)
-	if err := h.userService.ChangePassword(c, id, in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "密码修改失败", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "密码修改成功"})
-
+	userId, exists := c.Get("id")
+	if !exists {
+		response.Fail(c, 401, "unauthorized")
+		return
+	}
+	id := userId.(int64)
+	if err := h.userService.ChangePassword(c, id, in); err != nil {
+		response.Fail(c, 400, "密码修改失败")
+		return
+	}
+	response.Success(c, gin.H{"msg": "密码修改成功"})
 }
+
 func (h *UserHandler) ChangeUserId(c *gin.Context) {
 	var in req.ChangeUserIdReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
-	}
-	Id, _ := c.Get("id")
-	id := Id.(int64)
-	if err := h.userService.ChangeUserId(c, id, in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "userId修改失败", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "username修改成功"})
+	Id, exists := c.Get("id")
+	if !exists {
+		response.Fail(c, 401, "unauthorized")
+		return
+	}
+	id := Id.(int64)
+	if err := h.userService.ChangeUserId(c, id, in); err != nil {
+		response.Fail(c, 400, "userId修改失败")
+		return
+	}
+	response.Success(c, gin.H{"msg": "userId修改成功"})
 }
 
 func (h *UserHandler) GetUserInfo(c *gin.Context) {
 	userId, exists := c.Get("id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		response.Fail(c, 401, "unauthorized")
 		return
 	}
 	id := userId.(int64)
 	userInfo, err := h.userService.GetUserInfo(c, id)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "获取用户信息失败", "error": err.Error()})
+		response.Fail(c, 400, "获取用户信息失败")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "ok",
-		"data": userInfo,
-	})
+	response.Success(c, userInfo)
 }
+
 func (h *UserHandler) CancelAccount(c *gin.Context) {
 	var in req.CancelAccountReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
 
 	Id, exists := c.Get("id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		response.Fail(c, 401, "unauthorized")
 		return
 	}
 	id := Id.(int64)
 	if err := h.userService.CancelAccount(c.Request.Context(), id, in.Password); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "用户注销失败", "error": err.Error()})
+		response.Fail(c, 400, "用户注销失败")
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "用户注销成功"})
+	response.Success(c, gin.H{"msg": "用户注销成功"})
 }

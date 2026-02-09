@@ -1,7 +1,7 @@
 package friend_apply
 
 import (
-	"net/http"
+	"minichat/internal/handler/response"
 
 	"minichat/internal/req"
 	"minichat/internal/service/friend_apply"
@@ -19,31 +19,25 @@ func (h *FriendApplyHandler) GetFriendApplyList(c *gin.Context) {
 	id := c.GetInt64("id")
 	list, err := h.friendApplyService.GetFriendApply(c.Request.Context(), id)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "msg": err.Error()})
+		response.ServerError(c, err)
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"msg":  "ok",
-		"data": gin.H{
-			"list": list,
-		},
-	})
+	response.Success(c, gin.H{"list": list})
 }
 
 func (h *FriendApplyHandler) DealWithFriendApply(c *gin.Context) {
 	var in req.DealWithFriendApplyReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
 	Id := c.MustGet("id")
 
 	if err := h.friendApplyService.DealWithFriendApply(c.Request.Context(), Id.(int64), in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		response.Fail(c, 400, err.Error())
 		return
 	}
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "ok"})
+	response.Success(c, nil)
 }
 
 func NewUserHandler(svc friend_apply.FriendApplyServiceInterface) *FriendApplyHandler {
@@ -55,21 +49,20 @@ func NewUserHandler(svc friend_apply.FriendApplyServiceInterface) *FriendApplyHa
 func (h *FriendApplyHandler) SendFriendApply(c *gin.Context) {
 	var in req.SendFriendApplyReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": "invalid request", "error": err.Error()})
+		response.Fail(c, 400, "invalid request")
 		return
 	}
 
-	// JWT middleware stores user id under key "id"
 	fromUserId, exists := c.Get("id")
 	if !exists {
-		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "msg": "unauthorized"})
+		response.Fail(c, 401, "unauthorized")
 		return
 	}
 
 	if err := h.friendApplyService.SendFriendApply(c.Request.Context(), fromUserId.(int64), in); err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "msg": err.Error()})
+		response.Fail(c, 400, err.Error())
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{"code": 0, "msg": "ok"})
+	response.Success(c, nil)
 }

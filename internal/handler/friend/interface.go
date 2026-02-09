@@ -1,12 +1,14 @@
 package friend
 
+import "github.com/gin-gonic/gin"
+
 type FriendHandlerInterface interface {
 	//拉黑好友
-	BlackFriend()
+	BlackFriend(c *gin.Context)
 	//取消拉黑好友
-	UnBlackFriend()
+	UnBlackFriend(c *gin.Context)
 	//删除好友
-	DeleteFriend()
+	DeleteFriend(c *gin.Context)
 	//获取好友列表
-	GetFriendList()
+	GetFriendList(c *gin.Context)
 }
