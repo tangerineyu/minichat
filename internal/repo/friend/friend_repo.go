@@ -2,6 +2,7 @@ package friend
 
 import (
 	"context"
+	"minichat/internal/dto"
 	"minichat/internal/model"
 
 	"gorm.io/gorm"
@@ -9,6 +10,43 @@ import (
 
 type FriendRepo struct {
 	db *gorm.DB
+}
+
+func (f *FriendRepo) GetFriendRelation(ctx context.Context, Id, friendId int64) (*model.Friend, error) {
+	var relation *model.Friend
+	err := f.db.WithContext(ctx).
+		Where("user_id = ? AND friend_id = ?", Id, friendId).
+		First(&relation).Error
+	if err != nil {
+		return nil, err
+	}
+	return relation, nil
+}
+
+func (f *FriendRepo) UpdateFriendFields(ctx context.Context, Id, friendId int64, fields map[string]interface{}) error {
+	return f.db.WithContext(ctx).Model(model.Friend{}).
+		Where("user_id = ? AND friend_id = ?", Id, friendId).
+		Updates(fields).Error
+}
+
+func (f *FriendRepo) DeleteFriend(ctx context.Context, Id, friendId int64) error {
+	//TODO implement me
+	panic("implement me")
+}
+
+func (f *FriendRepo) GetList(ctx context.Context, Id int64, status int8) ([]*dto.FriendItem, error) {
+	var list []*dto.FriendItem
+	err := f.db.WithContext(ctx).Table("friends").
+		Select("friends.friend_id as friend_id, "+
+			"friends.remark as friend_remark, "+
+			"users.nickname as friend_nickname, "+
+			"users.avatar as friend_avatar, "+
+			"friends.created_at as create_at").
+		Joins("left join users on friends.friend_id = users.id").
+		Where("friends.user_id = ? AND friends.status = ?", Id, status).
+		Order("friends.created_at desc").
+		Scan(&list).Error
+	return list, err
 }
 
 func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64, a2rRemark, r2aRemark string) error {

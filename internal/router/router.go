@@ -19,6 +19,7 @@ func SetupRouter(r *gin.Engine, h *di.HandlerProvider) {
 	appRouterGroup := setupRouterGroup(r)
 	setupUserRoutes(appRouterGroup, h)
 	setupFriendApplyRoutes(appRouterGroup, h)
+	setupFriendRoutes(appRouterGroup, h)
 }
 
 func setupRouterGroup(r *gin.Engine) *AppRouterGroup {

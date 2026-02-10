@@ -2,3 +2,4 @@ internal/config/config.yaml
 logs
 .idea
 .env
+tmp

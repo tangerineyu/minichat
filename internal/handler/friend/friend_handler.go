@@ -12,17 +12,60 @@ type FriendHandler struct {
 	friendService friend.FriendServiceInterface
 }
 
+func (f *FriendHandler) UpdateFriendRemark(c *gin.Context) {
+	var in req.UpdateFriendRemarkReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Fail(c, 400, "参数错误")
+		return
+	}
+	id := c.GetInt64("id")
+	if err := f.friendService.UpdateFriendRemark(c.Request.Context(), id, in.FriendId, in.Remark); err != nil {
+		response.Fail(c, 400, err.Error())
+		return
+	}
+	response.Success(c, nil)
+}
+
+func (f *FriendHandler) GetBlackFriendList(c *gin.Context) {
+	id := c.GetInt64("id")
+	list, err := f.friendService.GetBlackFriendList(c.Request.Context(), id)
+	if err != nil {
+		response.ServerError(c, err)
+		return
+	}
+	response.Success(c, gin.H{"list": list})
+}
+
 func (f *FriendHandler) BlackFriend(c *gin.Context) {
 	var in req.BlackFriendReq
 	if err := c.ShouldBindJSON(&in); err != nil {
-		response.Fail(c, 400, "")
+		response.Fail(c, 400, "参数错误")
+		return
 	}
-
+	id := c.GetInt64("id")
+	if id == in.FriendId {
+		response.Fail(c, 400, "不能拉黑自己")
+		return
+	}
+	if err := f.friendService.BlackFriend(c.Request.Context(), id, in.FriendId); err != nil {
+		response.ServerError(c, err)
+		return
+	}
+	response.Success(c, nil)
 }
 
 func (f *FriendHandler) UnBlackFriend(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	var in req.BlackFriendReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Fail(c, 400, "参数错误")
+		return
+	}
+	id := c.GetInt64("id")
+	if err := f.friendService.UnBlackFriend(c.Request.Context(), id, in.FriendId); err != nil {
+		response.ServerError(c, err)
+		return
+	}
+	response.Success(c, nil)
 }
 
 func (f *FriendHandler) DeleteFriend(c *gin.Context) {
@@ -31,8 +74,13 @@ func (f *FriendHandler) DeleteFriend(c *gin.Context) {
 }
 
 func (f *FriendHandler) GetFriendList(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	id := c.GetInt64("id")
+	list, err := f.friendService.GetFriendList(c.Request.Context(), id)
+	if err != nil {
+		response.ServerError(c, err)
+		return
+	}
+	response.Success(c, gin.H{"list": list})
 }
 
 var _ (FriendHandlerInterface) = (*FriendHandler)(nil)

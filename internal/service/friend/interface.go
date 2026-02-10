@@ -1,14 +1,21 @@
 package friend
 
-import "minichat/internal/dto"
+import (
+	"context"
+	"minichat/internal/dto"
+)
 
 type FriendServiceInterface interface {
 	// 拉黑好友
-	BlackFriend(Id, friendId int64) error
+	BlackFriend(ctx context.Context, Id, friendId int64) error
 	// 取消拉黑好友
-	UnBlackFriend(Id, friendId int64) error
+	UnBlackFriend(ctx context.Context, Id, friendId int64) error
 	// 删除好友
-	DeleteFriend(Id, friendId int64) error
+	DeleteFriend(ctx context.Context, Id, friendId int64) error
 	// 获取好友列表
-	GetFriendList(Id int64) ([]*dto.FriendItem, error)
+	GetFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error)
+	// 修改好友备注
+	UpdateFriendRemark(ctx context.Context, Id, friendId int64, remark string) error
+	// 获取拉黑好友列表
+	GetBlackFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error)
 }

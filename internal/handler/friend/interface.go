@@ -11,4 +11,8 @@ type FriendHandlerInterface interface {
 	DeleteFriend(c *gin.Context)
 	//获取好友列表
 	GetFriendList(c *gin.Context)
+	// 修改好友备注
+	UpdateFriendRemark(c *gin.Context)
+	// 获取拉黑好友列表
+	GetBlackFriendList(c *gin.Context)
 }
