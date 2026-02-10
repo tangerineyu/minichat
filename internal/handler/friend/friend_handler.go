@@ -1,6 +1,8 @@
 package friend
 
 import (
+	"minichat/internal/handler/response"
+	"minichat/internal/req"
 	"minichat/internal/service/friend"
 
 	"github.com/gin-gonic/gin"
@@ -11,8 +13,10 @@ type FriendHandler struct {
 }
 
 func (f *FriendHandler) BlackFriend(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	var in req.BlackFriendReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Fail(c, 400, "")
+	}
 
 }
 

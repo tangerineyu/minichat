@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"minichat/internal/common"
+	"minichat/internal/dto"
 	friend_repo "minichat/internal/repo/friend"
 	repo "minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/user"
@@ -20,7 +21,7 @@ type FriendApplyService struct {
 	userRepo        user.UserRepoInterface
 }
 
-func (s *FriendApplyService) GetFriendApply(ctx context.Context, id int64) ([]*req.FriendApplyListReq, error) {
+func (s *FriendApplyService) GetFriendApply(ctx context.Context, id int64) ([]*dto.FriendApplyItem, error) {
 	list, err := s.friendApplyRepo.GetFriendApplyList(ctx, id)
 	if err != nil {
 		zap.L().Error("GetFriendApply", zap.Error(err))

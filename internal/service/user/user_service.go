@@ -5,7 +5,7 @@ import (
 	"errors"
 	"fmt"
 	commonModel "minichat/internal/common"
-	"minichat/internal/handler/response"
+	"minichat/internal/dto"
 	"minichat/internal/model"
 	repo "minichat/internal/repo/user"
 	"minichat/internal/req"
@@ -170,18 +170,17 @@ func (u *UserService) ChangeUserId(ctx context.Context, id int64, in req.ChangeU
 	return u.userRepo.ChangeUserId(ctx, id, in.NewUserId, user.UserIdChangedAt)
 }
 
-func (u *UserService) GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error) {
+func (u *UserService) GetUserInfo(ctx context.Context, id int64) (dto.UserInfo, error) {
 	user, err := u.userRepo.GetUserById(ctx, id)
 	if err != nil {
-		return response.UserInfoResponse{}, errors.New("查询用户信息失败：" + err.Error())
+		return dto.UserInfo{}, errors.New("查询用户信息失败：" + err.Error())
 	}
-	return response.UserInfoResponse{
+	return dto.UserInfo{
 		UserId:    user.UserId,
 		Nickname:  user.Nickname,
 		Avatar:    user.Avatar,
 		Telephone: user.Telephone,
 	}, nil
-
 }
 
 func NewUserService(userRepo repo.UserRepoInterface) UserServiceInterface {

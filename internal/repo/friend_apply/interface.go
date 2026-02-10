@@ -2,8 +2,8 @@ package friend_apply
 
 import (
 	"context"
+	"minichat/internal/dto"
 	"minichat/internal/model"
-	"minichat/internal/req"
 )
 
 type FriendApplyRepoInterface interface {
@@ -14,5 +14,5 @@ type FriendApplyRepoInterface interface {
 	// 更新好友申请状态
 	UpdateApplyStatus(ctx context.Context, applyId int64, status int) error
 	// 获取用户的好友申请列表
-	GetFriendApplyList(ctx context.Context, id int64) ([]*req.FriendApplyListReq, error)
+	GetFriendApplyList(ctx context.Context, id int64) ([]*dto.FriendApplyItem, error)
 }

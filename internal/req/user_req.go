@@ -1,7 +1,6 @@
 package req
 
-import "minichat/internal/model"
-
+// RegisterReq represents the structure for user registration requests.
 type RegisterReq struct {
 	//Username  string `json:"username"`
 	Telephone string `json:"telephone"`
@@ -18,6 +17,7 @@ type LoginReq struct {
 	Password  string `json:"password"`
 }
 
+// UpdateUserReq represents the structure for updating user information.
 type UpdateUserReq struct {
 	Nickname *string `json:"nickname"`
 	Avatar   *string `json:"avatar"`
@@ -35,7 +35,5 @@ type CancelAccountReq struct {
 type ChangeUserIdReq struct {
 	NewUserId string `json:"user_id"`
 }
-type AuthResponse struct {
-	Token string     `json:"token"`
-	User  model.User `json:"user"`
-}
+
+// 注意：AuthResponse 属于响应 DTO（且不建议直接暴露 model.User），已迁移出 req 包。

@@ -2,8 +2,8 @@ package friend_apply
 
 import (
 	"context"
+	"minichat/internal/dto"
 	"minichat/internal/model"
-	"minichat/internal/req"
 	"minichat/util/snowflake"
 
 	"gorm.io/gorm"
@@ -15,8 +15,8 @@ type FriendApplyRepo struct {
 	db *gorm.DB
 }
 
-func (f *FriendApplyRepo) GetFriendApplyList(ctx context.Context, id int64) ([]*req.FriendApplyListReq, error) {
-	var list []*req.FriendApplyListReq
+func (f *FriendApplyRepo) GetFriendApplyList(ctx context.Context, id int64) ([]*dto.FriendApplyItem, error) {
+	var list []*dto.FriendApplyItem
 	err := f.db.WithContext(ctx).Table("friend_apply").
 		Select("friend_apply.id as apply_id, "+
 			"friend_apply.apply_msg as apply_msg, "+

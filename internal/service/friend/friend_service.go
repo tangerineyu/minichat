@@ -1,8 +1,11 @@
 package friend
 
 import (
+	"errors"
+	"minichat/internal/dto"
 	"minichat/internal/repo/friend"
-	"minichat/internal/req"
+
+	"go.uber.org/zap"
 )
 
 type FriendService struct {
@@ -24,9 +27,9 @@ func (f *FriendService) DeleteFriend(Id, friendId int64) error {
 	panic("implement me")
 }
 
-func (f *FriendService) GetFriendList(Id int64) ([]*req.FriendListReq, error) {
-	//TODO implement me
-	panic("implement me")
+func (f *FriendService) GetFriendList(Id int64) ([]*dto.FriendItem, error) {
+	zap.L().Warn("GetFriendList not implemented")
+	return nil, errors.New("获取好友列表暂未实现")
 }
 
 func NewFriendService(repo friend.FriendRepoInterface) FriendServiceInterface {

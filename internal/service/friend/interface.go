@@ -1,6 +1,6 @@
 package friend
 
-import "minichat/internal/req"
+import "minichat/internal/dto"
 
 type FriendServiceInterface interface {
 	// 拉黑好友
@@ -10,5 +10,5 @@ type FriendServiceInterface interface {
 	// 删除好友
 	DeleteFriend(Id, friendId int64) error
 	// 获取好友列表
-	GetFriendList(Id int64) ([]*req.FriendListReq, error)
+	GetFriendList(Id int64) ([]*dto.FriendItem, error)
 }

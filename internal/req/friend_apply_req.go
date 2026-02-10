@@ -1,7 +1,5 @@
 package req
 
-import "time"
-
 type SendFriendApplyReq struct {
 	//FromUserId string `json:"from_user_id"`
 	ToUserId int64  `json:"to_user_id"`
@@ -15,13 +13,4 @@ type DealWithFriendApplyReq struct {
 	Remark string `json:"remark"`
 }
 
-type FriendApplyListReq struct {
-	ApplyId  int64  `json:"apply_id"`
-	ApplyMsg string `json:"apply_msg"`
-	Status   int8   `json:"status"`
-
-	FromId           int64     `json:"from_user_id"`
-	FromUserNickname string    `json:"from_user_nickname"`
-	FromUserAvatar   string    `json:"from_user_avatar"`
-	CreatedAt        time.Time `json:"created_at"`
-}
+// FriendApplyListReq 属于响应 DTO，已迁移到 internal/dto.FriendApplyItem。

@@ -2,7 +2,7 @@ package user
 
 import (
 	"context"
-	"minichat/internal/handler/response"
+	"minichat/internal/dto"
 	"minichat/internal/req"
 )
 
@@ -18,7 +18,7 @@ type UserServiceInterface interface {
 	// 更改用户Id
 	ChangeUserId(ctx context.Context, id int64, in req.ChangeUserIdReq) error
 	// 获取用户信息
-	GetUserInfo(ctx context.Context, id int64) (response.UserInfoResponse, error)
+	GetUserInfo(ctx context.Context, id int64) (dto.UserInfo, error)
 	// 用户注销（需要二次密码校验）
 	CancelAccount(ctx context.Context, id int64, password string) error
 }
