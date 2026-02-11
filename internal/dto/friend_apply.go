@@ -8,7 +8,7 @@ type FriendApplyItem struct {
 	ApplyMsg string `json:"apply_msg"`
 	Status   int8   `json:"status"`
 
-	FromId           int64     `json:"from_user_id"`
+	FromUserId       int64     `json:"from_user_id"`
 	FromUserNickname string    `json:"from_user_nickname"`
 	FromUserAvatar   string    `json:"from_user_avatar"`
 	CreatedAt        time.Time `json:"created_at"`

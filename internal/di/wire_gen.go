@@ -29,7 +29,7 @@ func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	friendRepoInterface := friend.NewFriendRepo(database)
 	friendApplyServiceInterface := friend_apply2.NewFriendApplyService(friendApplyRepoInterface, friendRepoInterface, userRepoInterface)
 	friendApplyHandler := friend_apply3.NewUserHandler(friendApplyServiceInterface)
-	friendServiceInterface := friend2.NewFriendService(friendRepoInterface)
+	friendServiceInterface := friend2.NewFriendService(friendRepoInterface, userRepoInterface)
 	friendHandler := friend3.NewFriendHandler(friendServiceInterface)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,

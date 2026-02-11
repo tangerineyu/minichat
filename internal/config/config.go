@@ -36,11 +36,18 @@ type JWTConfig struct {
 	RefreshTTLHours  int    `yaml:"refresh_ttl_hours"`
 }
 
+type RedisConfig struct {
+	Addr     string `yaml:"addr"`
+	Password string `yaml:"password"`
+	DB       int    `yaml:"db"`
+}
+
 type AppConfig struct {
 	Server ServerConfig `yaml:"server"`
 	Logger LoggerConfig `yaml:"logger"`
 	DB     DBConfig     `yaml:"db"`
 	JWT    JWTConfig    `yaml:"jwt"`
+	Redis  RedisConfig  `yaml:"redis"`
 }
 
 func defaultConfig() AppConfig {
@@ -55,8 +62,9 @@ func defaultConfig() AppConfig {
 			Compress:   false,
 			ToStdout:   true,
 		},
-		DB:  DBConfig{Driver: "sqlite", DSN: "minichat.db"},
-		JWT: JWTConfig{Secret: "minichat-dev-secret-change-me", AccessTTLMinutes: 120, RefreshTTLHours: 168},
+		DB:    DBConfig{Driver: "sqlite", DSN: "minichat.db"},
+		JWT:   JWTConfig{Secret: "minichat-dev-secret-change-me", AccessTTLMinutes: 120, RefreshTTLHours: 168},
+		Redis: RedisConfig{Addr: "6379", Password: "", DB: 3},
 	}
 }
 

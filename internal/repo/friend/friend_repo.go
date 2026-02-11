@@ -34,19 +34,29 @@ func (f *FriendRepo) DeleteFriend(ctx context.Context, Id, friendId int64) error
 	panic("implement me")
 }
 
-func (f *FriendRepo) GetList(ctx context.Context, Id int64, status int8) ([]*dto.FriendItem, error) {
+func (f *FriendRepo) GetList(ctx context.Context, Id int64, status int8, lastSortedName string, lastId int64, limit int) ([]*dto.FriendItem, error) {
 	var list []*dto.FriendItem
-	err := f.db.WithContext(ctx).Table("friends").
+	query := f.db.WithContext(ctx).Table("friends").
 		Select("friends.friend_id as friend_id, "+
 			"friends.remark as friend_remark, "+
 			"users.nickname as friend_nickname, "+
 			"users.avatar as friend_avatar, "+
 			"friends.created_at as create_at").
 		Joins("left join users on friends.friend_id = users.id").
-		Where("friends.user_id = ? AND friends.status = ?", Id, status).
-		Order("friends.created_at desc").
+		Where("friends.user_id = ? AND friends.status = ?", Id, status)
+
+	if lastSortedName != "" {
+		query = query.Where("(friends.sort_name > ?) OR (friends.sort_name = ? AND friends.friend_id > ?) ",
+			lastSortedName, lastSortedName, lastId)
+	}
+	err := query.Order("friends.sort_name asc, friends.friend_id asc").
+		Limit(limit).
 		Scan(&list).Error
-	return list, err
+	if err != nil {
+		return nil, err
+	}
+
+	return list, nil
 }
 
 func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64, a2rRemark, r2aRemark string) error {

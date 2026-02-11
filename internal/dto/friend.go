@@ -8,5 +8,6 @@ type FriendItem struct {
 	FriendNickname string    `json:"friend_nickname"`
 	FriendRemark   string    `json:"friend_remark"`
 	FriendAvatar   string    `json:"friend_avatar"`
+	SortedName     string    `json:"sorted_name"`
 	CreateAt       time.Time `json:"create_at"`
 }

@@ -28,12 +28,14 @@ func (f *FriendHandler) UpdateFriendRemark(c *gin.Context) {
 
 func (f *FriendHandler) GetBlackFriendList(c *gin.Context) {
 	id := c.GetInt64("id")
-	list, err := f.friendService.GetBlackFriendList(c.Request.Context(), id)
+	var page req.CursorPageReq
+	_ = c.ShouldBindQuery(&page)
+	list, nextCursor, err := f.friendService.GetBlackFriendList(c.Request.Context(), id, page.Cursor, page.Limit)
 	if err != nil {
 		response.ServerError(c, err)
 		return
 	}
-	response.Success(c, gin.H{"list": list})
+	response.Success(c, gin.H{"list": list, "next_cursor": nextCursor})
 }
 
 func (f *FriendHandler) BlackFriend(c *gin.Context) {
@@ -75,12 +77,14 @@ func (f *FriendHandler) DeleteFriend(c *gin.Context) {
 
 func (f *FriendHandler) GetFriendList(c *gin.Context) {
 	id := c.GetInt64("id")
-	list, err := f.friendService.GetFriendList(c.Request.Context(), id)
+	var page req.CursorPageReq
+	_ = c.ShouldBindQuery(&page)
+	list, nextCursor, err := f.friendService.GetFriendList(c.Request.Context(), id, page.Cursor, page.Limit)
 	if err != nil {
 		response.ServerError(c, err)
 		return
 	}
-	response.Success(c, gin.H{"list": list})
+	response.Success(c, gin.H{"list": list, "next_cursor": nextCursor})
 }
 
 var _ (FriendHandlerInterface) = (*FriendHandler)(nil)

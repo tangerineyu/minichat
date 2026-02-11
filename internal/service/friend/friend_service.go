@@ -2,10 +2,12 @@ package friend
 
 import (
 	"context"
+	"encoding/base64"
+	"encoding/json"
 	"errors"
 	"minichat/internal/dto"
 	"minichat/internal/repo/friend"
-	"sort"
+	"minichat/internal/repo/user"
 	"strings"
 
 	"gorm.io/gorm"
@@ -13,6 +15,7 @@ import (
 
 type FriendService struct {
 	friendRepo friend.FriendRepoInterface
+	userRepo   user.UserRepoInterface
 }
 
 func (f *FriendService) BlackFriend(ctx context.Context, Id, friendId int64) error {
@@ -49,55 +52,111 @@ func (f *FriendService) UpdateFriendRemark(ctx context.Context, Id, friendId int
 	if len(remark) > 64 {
 		return errors.New("备注长度不能超过64个字符")
 	}
+	//排序名称
+	sortName := remark
+	fri, err := f.userRepo.GetUserById(ctx, Id)
+	if err != nil {
+		return errors.New("查询用户信息失败")
+	}
+	friendNickname := fri.Nickname
+	if strings.TrimSpace(sortName) == "" {
+		sortName = friendNickname
+	}
 	return f.friendRepo.UpdateFriendFields(ctx, Id, friendId, map[string]interface{}{
-		"remark": remark,
+		"remark":    remark,
+		"sort_name": strings.ToUpper(sortName),
 	})
 }
 
-func displayNameForSort(it *dto.FriendItem) string {
-	if it == nil {
+// 注意：全局排序 + 滚动分页必须以数据库的排序字段为准。
+// 任何服务层二次排序都会破坏 cursor 分页的一致性（导致重复/漏数据）。
+
+const (
+	defaultFriendListLimit = 50
+	maxFriendListLimit     = 200
+)
+
+func normalizeLimit(limit int) int {
+	if limit <= 0 {
+		return defaultFriendListLimit
+	}
+	if limit > maxFriendListLimit {
+		return maxFriendListLimit
+	}
+	return limit
+}
+
+func (f *FriendService) GetFriendList(ctx context.Context, Id int64, cursor string, limit int) ([]*dto.FriendItem, string, error) {
+	limit = normalizeLimit(limit)
+	lastName, lastId := parseCursor(cursor)
+
+	list, err := f.friendRepo.GetList(ctx, Id, 1, lastName, lastId, limit)
+	if err != nil {
+		return nil, "", err
+	}
+
+	nextCursor := ""
+	if len(list) > 0 {
+		lastItem := list[len(list)-1]
+		nextCursor = encoderCursor(lastItem.SortedName, lastItem.FriendId)
+	}
+	return list, nextCursor, nil
+}
+
+func (f *FriendService) GetBlackFriendList(ctx context.Context, Id int64, cursor string, limit int) ([]*dto.FriendItem, string, error) {
+	limit = normalizeLimit(limit)
+	lastName, lastId := parseCursor(cursor)
+
+	list, err := f.friendRepo.GetList(ctx, Id, 2, lastName, lastId, limit)
+	if err != nil {
+		return nil, "", err
+	}
+
+	nextCursor := ""
+	if len(list) > 0 {
+		lastItem := list[len(list)-1]
+		nextCursor = encoderCursor(lastItem.SortedName, lastItem.FriendId)
+	}
+	return list, nextCursor, nil
+}
+
+func NewFriendService(repo friend.FriendRepoInterface, userRepo user.UserRepoInterface) FriendServiceInterface {
+	return &FriendService{
+		friendRepo: repo,
+		userRepo:   userRepo,
+	}
+}
+
+type friendListCursor struct {
+	LastSortedName string `json:"n"`
+	LastID         int64  `json:"id"`
+}
+
+// 将 cursor 解码成最后一个好友的排序名称和ID，供下一页查询使用  解密
+func parseCursor(cursor string) (lastSortedName string, lastID int64) {
+	cursor = strings.TrimSpace(cursor)
+	if cursor == "" {
+		return "", 0
+	}
+
+	b, err := base64.RawURLEncoding.DecodeString(cursor)
+	if err != nil {
+		// 容错：非法 cursor 当作第一页处理
+		return "", 0
+	}
+	var c friendListCursor
+	if err := json.Unmarshal(b, &c); err != nil {
+		return "", 0
+	}
+	return c.LastSortedName, c.LastID
+}
+
+// 将最后一个好友的排序名称和ID编码成 cursor，供下一页查询使用  加密
+func encoderCursor(lastSortedName string, lastID int64) string {
+	c := friendListCursor{LastSortedName: lastSortedName, LastID: lastID}
+	b, err := json.Marshal(c)
+	if err != nil {
 		return ""
 	}
-	name := strings.TrimSpace(it.FriendRemark)
-	if name == "" {
-		name = strings.TrimSpace(it.FriendNickname)
-	}
-	return name
-}
-
-func sortFriendItemsByRemarkThenNickname(list []*dto.FriendItem) {
-	sort.SliceStable(list, func(i, j int) bool {
-		a := strings.ToUpper(displayNameForSort(list[i]))
-		b := strings.ToUpper(displayNameForSort(list[j]))
-		if a == b {
-			// 次级排序：friend_id，保证稳定可预期
-			if list[i] == nil || list[j] == nil {
-				return a < b
-			}
-			return list[i].FriendId < list[j].FriendId
-		}
-		return a < b
-	})
-}
-
-func (f *FriendService) GetFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error) {
-	list, err := f.friendRepo.GetList(ctx, Id, 1)
-	if err != nil {
-		return nil, err
-	}
-	sortFriendItemsByRemarkThenNickname(list)
-	return list, nil
-}
-
-func (f *FriendService) GetBlackFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error) {
-	list, err := f.friendRepo.GetList(ctx, Id, 2)
-	if err != nil {
-		return nil, err
-	}
-	sortFriendItemsByRemarkThenNickname(list)
-	return list, nil
-}
-
-func NewFriendService(repo friend.FriendRepoInterface) FriendServiceInterface {
-	return &FriendService{friendRepo: repo}
+	return base64.RawURLEncoding.EncodeToString(b)
 }

@@ -12,10 +12,11 @@ type FriendServiceInterface interface {
 	UnBlackFriend(ctx context.Context, Id, friendId int64) error
 	// 删除好友
 	DeleteFriend(ctx context.Context, Id, friendId int64) error
-	// 获取好友列表
-	GetFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error)
+
+	// 获取好友列表（滚动分页）
+	GetFriendList(ctx context.Context, Id int64, cursor string, limit int) ([]*dto.FriendItem, string, error)
 	// 修改好友备注
 	UpdateFriendRemark(ctx context.Context, Id, friendId int64, remark string) error
-	// 获取拉黑好友列表
-	GetBlackFriendList(ctx context.Context, Id int64) ([]*dto.FriendItem, error)
+	// 获取拉黑好友列表（滚动分页）
+	GetBlackFriendList(ctx context.Context, Id int64, cursor string, limit int) ([]*dto.FriendItem, string, error)
 }
