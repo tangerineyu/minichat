@@ -18,4 +18,6 @@ type UserHandlerInterface interface {
 	GetUserInfo(c *gin.Context)
 	// 用户注销
 	CancelAccount(c *gin.Context)
+	// 上传头像
+	UploadAvatar(c *gin.Context)
 }

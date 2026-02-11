@@ -14,4 +14,5 @@ func setupUserRoutes(appRouterGroup *AppRouterGroup, h *di.HandlerProvider) {
 	appRouterGroup.AuthRouterGroup.PUT("/user/update/userid", h.UserHandler.ChangeUserId)
 	appRouterGroup.AuthRouterGroup.GET("/user/info", h.UserHandler.GetUserInfo)
 	appRouterGroup.AuthRouterGroup.DELETE("/user/cancel", h.UserHandler.CancelAccount)
+	appRouterGroup.AuthRouterGroup.POST("/user/avatar", h.UserHandler.UploadAvatar)
 }

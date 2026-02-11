@@ -23,7 +23,12 @@ import (
 
 func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	userRepoInterface := user.NewUserRepo(database)
-	userServiceInterface := user2.NewUserService(userRepoInterface)
+	appConfig := provideAppConfig()
+	ossInterface, err := ProvideOSS(appConfig)
+	if err != nil {
+		return nil, err
+	}
+	userServiceInterface := user2.NewUserService(userRepoInterface, ossInterface)
 	userHandler := user3.NewUserHandler(userServiceInterface)
 	friendApplyRepoInterface := friend_apply.NewFriendApplyRepo(database)
 	friendRepoInterface := friend.NewFriendRepo(database)

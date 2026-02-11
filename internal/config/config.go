@@ -42,12 +42,19 @@ type RedisConfig struct {
 	DB       int    `yaml:"db"`
 }
 
+type OSSConfig struct {
+	Endpoint        string `yaml:"endpoint"`
+	AccessKeyID     string `yaml:"access_key_id"`
+	AccessKeySecret string `yaml:"access_key_secret"`
+	BucketName      string `yaml:"bucket_name"`
+}
 type AppConfig struct {
 	Server ServerConfig `yaml:"server"`
 	Logger LoggerConfig `yaml:"logger"`
 	DB     DBConfig     `yaml:"db"`
 	JWT    JWTConfig    `yaml:"jwt"`
 	Redis  RedisConfig  `yaml:"redis"`
+	OSS    OSSConfig    `yaml:"oss"`
 }
 
 func defaultConfig() AppConfig {

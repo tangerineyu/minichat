@@ -2,6 +2,7 @@ package user
 
 import (
 	"context"
+	"io"
 	"minichat/internal/dto"
 	"minichat/internal/req"
 )
@@ -21,4 +22,6 @@ type UserServiceInterface interface {
 	GetUserInfo(ctx context.Context, id int64) (dto.UserInfo, error)
 	// 用户注销（需要二次密码校验）
 	CancelAccount(ctx context.Context, id int64, password string) error
+	// 上传头像：上传文件到对象存储，并更新 users.avatar
+	UploadAvatar(ctx context.Context, userID int64, contentType string, r io.Reader) (string, error)
 }

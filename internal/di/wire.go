@@ -20,6 +20,10 @@ import (
 
 func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	wire.Build(
+		// configs
+		provideAppConfig,
+		ProvideOSS,
+
 		// repos
 		userRepo.NewUserRepo,
 		friendApplyRepo.NewFriendApplyRepo,

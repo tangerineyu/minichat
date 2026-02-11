@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	commonModel "minichat/internal/common"
 	"minichat/internal/dto"
 	"minichat/internal/model"
@@ -12,11 +13,15 @@ import (
 	jwtutil "minichat/util/jwt"
 	crypto "minichat/util/password"
 	"minichat/util/snowflake"
+	ossutil "minichat/util/storage/oss"
+	"path"
+	"strings"
 	"time"
 )
 
 type UserService struct {
 	userRepo repo.UserRepoInterface
+	oss      ossutil.OSSInterface
 }
 
 func (u *UserService) CancelAccount(ctx context.Context, id int64, password string) error {
@@ -183,8 +188,39 @@ func (u *UserService) GetUserInfo(ctx context.Context, id int64) (dto.UserInfo, 
 	}, nil
 }
 
-func NewUserService(userRepo repo.UserRepoInterface) UserServiceInterface {
+func (u *UserService) UploadAvatar(ctx context.Context, userID int64, contentType string, r io.Reader) (string, error) {
+	if userID <= 0 {
+		return "", errors.New("invalid userID")
+	}
+	if u.oss == nil {
+		return "", errors.New("oss not configured")
+	}
+	if r == nil {
+		return "", errors.New("empty file")
+	}
+
+	// 生成对象 key：avatars/{userID}/{snowflake}.bin
+	// contentType 可在 handler 端按真实文件类型传入（image/jpeg、image/png）
+	objKey := path.Join("avatars", fmt.Sprintf("%d", userID), snowflake.GenStringID())
+	url, err := u.oss.UploadFile(ctx, objKey, strings.TrimSpace(contentType), r)
+	if err != nil {
+		return "", err
+	}
+
+	user, err := u.userRepo.GetUserById(ctx, userID)
+	if err != nil {
+		return "", errors.New("查询用户失败：" + err.Error())
+	}
+	user.Avatar = url
+	if err := u.userRepo.UpdateUser(ctx, user); err != nil {
+		return "", errors.New("更新头像失败：" + err.Error())
+	}
+	return url, nil
+}
+
+func NewUserService(userRepo repo.UserRepoInterface, oss ossutil.OSSInterface) UserServiceInterface {
 	return &UserService{
 		userRepo: userRepo,
+		oss:      oss,
 	}
 }

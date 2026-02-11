@@ -2,9 +2,9 @@ package user
 
 import (
 	"minichat/internal/handler/response"
-
 	"minichat/internal/req"
 	"minichat/internal/service/user"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
@@ -140,4 +140,34 @@ func (h *UserHandler) CancelAccount(c *gin.Context) {
 		return
 	}
 	response.Success(c, gin.H{"msg": "用户注销成功"})
+}
+
+func (h *UserHandler) UploadAvatar(c *gin.Context) {
+	userIdAny, exists := c.Get("id")
+	if !exists {
+		response.Fail(c, http.StatusUnauthorized, "unauthorized")
+		return
+	}
+	userID := userIdAny.(int64)
+
+	file, header, err := c.Request.FormFile("file")
+	if err != nil {
+		response.Fail(c, http.StatusBadRequest, "missing file")
+		return
+	}
+	defer file.Close()
+
+	contentType := header.Header.Get("Content-Type")
+	if contentType == "" {
+		// 兜底：有些客户端可能不带
+		contentType = c.GetHeader("Content-Type")
+	}
+
+	avatarURL, err := h.userService.UploadAvatar(c.Request.Context(), userID, contentType, file)
+	if err != nil {
+		response.Fail(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	response.Success(c, gin.H{"avatar_url": avatarURL})
 }
