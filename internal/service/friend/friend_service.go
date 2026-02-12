@@ -18,6 +18,12 @@ type FriendService struct {
 	userRepo   user.UserRepoInterface
 }
 
+func NewFriendService(repo friend.FriendRepoInterface, userRepo user.UserRepoInterface) *FriendService {
+	return &FriendService{
+		friendRepo: repo,
+		userRepo:   userRepo,
+	}
+}
 func (f *FriendService) BlackFriend(ctx context.Context, Id, friendId int64) error {
 	err := f.friendRepo.UpdateFriendFields(ctx, Id, friendId, map[string]interface{}{
 		"status": 2,
@@ -118,13 +124,6 @@ func (f *FriendService) GetBlackFriendList(ctx context.Context, Id int64, cursor
 		nextCursor = encoderCursor(lastItem.SortedName, lastItem.FriendId)
 	}
 	return list, nextCursor, nil
-}
-
-func NewFriendService(repo friend.FriendRepoInterface, userRepo user.UserRepoInterface) FriendServiceInterface {
-	return &FriendService{
-		friendRepo: repo,
-		userRepo:   userRepo,
-	}
 }
 
 type friendListCursor struct {

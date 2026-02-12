@@ -143,12 +143,12 @@ func (h *UserHandler) CancelAccount(c *gin.Context) {
 }
 
 func (h *UserHandler) UploadAvatar(c *gin.Context) {
-	userIdAny, exists := c.Get("id")
+	id, exists := c.Get("id")
 	if !exists {
 		response.Fail(c, http.StatusUnauthorized, "unauthorized")
 		return
 	}
-	userID := userIdAny.(int64)
+	userID := id.(int64)
 
 	file, header, err := c.Request.FormFile("file")
 	if err != nil {

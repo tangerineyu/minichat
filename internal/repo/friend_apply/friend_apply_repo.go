@@ -62,6 +62,6 @@ func (f *FriendApplyRepo) CreateFriendApply(ctx context.Context, formUserId, toU
 	return apply, nil
 }
 
-func NewFriendApplyRepo(db *gorm.DB) FriendApplyRepoInterface {
+func NewFriendApplyRepo(db *gorm.DB) *FriendApplyRepo {
 	return &FriendApplyRepo{db: db}
 }

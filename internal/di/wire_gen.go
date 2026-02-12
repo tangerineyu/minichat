@@ -7,39 +7,68 @@
 package di
 
 import (
+	"github.com/google/wire"
 	"gorm.io/gorm"
 	friend3 "minichat/internal/handler/friend"
 	friend_apply3 "minichat/internal/handler/friend_apply"
+	group3 "minichat/internal/handler/group"
 	user3 "minichat/internal/handler/user"
 	"minichat/internal/repo/friend"
 	"minichat/internal/repo/friend_apply"
+	"minichat/internal/repo/group"
 	"minichat/internal/repo/user"
 	friend2 "minichat/internal/service/friend"
 	friend_apply2 "minichat/internal/service/friend_apply"
+	group2 "minichat/internal/service/group"
 	user2 "minichat/internal/service/user"
 )
 
 // Injectors from wire.go:
 
 func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
-	userRepoInterface := user.NewUserRepo(database)
+	userRepo := user.NewUserRepo(database)
 	appConfig := provideAppConfig()
 	ossInterface, err := ProvideOSS(appConfig)
 	if err != nil {
 		return nil, err
 	}
-	userServiceInterface := user2.NewUserService(userRepoInterface, ossInterface)
-	userHandler := user3.NewUserHandler(userServiceInterface)
-	friendApplyRepoInterface := friend_apply.NewFriendApplyRepo(database)
-	friendRepoInterface := friend.NewFriendRepo(database)
-	friendApplyServiceInterface := friend_apply2.NewFriendApplyService(friendApplyRepoInterface, friendRepoInterface, userRepoInterface)
-	friendApplyHandler := friend_apply3.NewUserHandler(friendApplyServiceInterface)
-	friendServiceInterface := friend2.NewFriendService(friendRepoInterface, userRepoInterface)
-	friendHandler := friend3.NewFriendHandler(friendServiceInterface)
+	userService := user2.NewUserService(userRepo, ossInterface)
+	userHandler := user3.NewUserHandler(userService)
+	friendApplyRepo := friend_apply.NewFriendApplyRepo(database)
+	friendRepo := friend.NewFriendRepo(database)
+	friendApplyService := friend_apply2.NewFriendApplyService(friendApplyRepo, friendRepo, userRepo)
+	friendApplyHandler := friend_apply3.NewUserHandler(friendApplyService)
+	friendService := friend2.NewFriendService(friendRepo, userRepo)
+	friendHandler := friend3.NewFriendHandler(friendService)
+	groupRepo := group.NewGroupRepo(database)
+	groupService := group2.NewGroupService(groupRepo)
+	groupHandler := group3.NewGroupHandler(groupService)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,
 		FriendApplyHandler: friendApplyHandler,
 		FriendHandler:      friendHandler,
+		GroupHandler:       groupHandler,
 	}
 	return handlerProvider, nil
 }
+
+// wire.go:
+
+var UserSet = wire.NewSet(
+
+	provideAppConfig,
+	ProvideOSS, user.NewUserRepo, wire.Bind(new(user.UserRepoInterface), new(*user.UserRepo)), user2.NewUserService, wire.Bind(new(user2.UserServiceInterface), new(*user2.UserService)), user3.NewUserHandler,
+)
+
+var FriendSet = wire.NewSet(friend.NewFriendRepo, wire.Bind(new(friend.FriendRepoInterface), new(*friend.FriendRepo)), friend2.NewFriendService, wire.Bind(new(friend2.FriendServiceInterface), new(*friend2.FriendService)), friend3.NewFriendHandler)
+
+var FriendApplySet = wire.NewSet(friend_apply.NewFriendApplyRepo, wire.Bind(new(friend_apply.FriendApplyRepoInterface), new(*friend_apply.FriendApplyRepo)), friend_apply2.NewFriendApplyService, wire.Bind(new(friend_apply2.FriendApplyServiceInterface), new(*friend_apply2.FriendApplyService)), friend_apply3.NewUserHandler)
+
+var GroupSet = wire.NewSet(group.NewGroupRepo, wire.Bind(new(group.GroupRepoInterface), new(*group.GroupRepo)), group2.NewGroupService, wire.Bind(new(group2.GroupServiceInterface), new(*group2.GroupService)), group3.NewGroupHandler)
+
+var HandlerProviderSet = wire.NewSet(
+	UserSet,
+	FriendSet,
+	FriendApplySet,
+	GroupSet, wire.Struct(new(HandlerProvider), "*"),
+)

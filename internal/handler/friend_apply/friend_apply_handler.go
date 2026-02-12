@@ -40,12 +40,6 @@ func (h *FriendApplyHandler) DealWithFriendApply(c *gin.Context) {
 	response.Success(c, nil)
 }
 
-func NewUserHandler(svc friend_apply.FriendApplyServiceInterface) *FriendApplyHandler {
-	return &FriendApplyHandler{
-		friendApplyService: svc,
-	}
-}
-
 func (h *FriendApplyHandler) SendFriendApply(c *gin.Context) {
 	var in req.SendFriendApplyReq
 	if err := c.ShouldBindJSON(&in); err != nil {
@@ -65,4 +59,10 @@ func (h *FriendApplyHandler) SendFriendApply(c *gin.Context) {
 	}
 
 	response.Success(c, nil)
+}
+
+func NewUserHandler(svc friend_apply.FriendApplyServiceInterface) *FriendApplyHandler {
+	return &FriendApplyHandler{
+		friendApplyService: svc,
+	}
 }

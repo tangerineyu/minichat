@@ -3,8 +3,9 @@ package model
 import "time"
 
 type Group struct {
-	ID           int64  `gorm:"primaryKey;type:BIGINT" json:"id"`
-	Name         string `gorm:"type:VARCHAR(64);not null" json:"name"`
+	ID   int64  `gorm:"primaryKey;type:BIGINT" json:"id"`
+	Name string `gorm:"type:VARCHAR(64);not null" json:"name"`
+	// 群主ID，关联用户表的ID
 	OwnerID      int64  `gorm:"type:BIGINT;not null;index" json:"owner_id"`
 	Announcement string `gorm:"type:TEXT" json:"announcement"`
 	Avatar       string `gorm:"type:VARCHAR(255)" json:"avatar"`

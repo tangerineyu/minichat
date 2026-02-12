@@ -93,6 +93,6 @@ func (f *FriendRepo) MakeFriends(ctx context.Context, applyId int64, a2rRemark, 
 	})
 }
 
-func NewFriendRepo(db *gorm.DB) FriendRepoInterface {
+func NewFriendRepo(db *gorm.DB) *FriendRepo {
 	return &FriendRepo{db: db}
 }

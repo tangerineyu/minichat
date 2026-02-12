@@ -218,7 +218,7 @@ func (u *UserService) UploadAvatar(ctx context.Context, userID int64, contentTyp
 	return url, nil
 }
 
-func NewUserService(userRepo repo.UserRepoInterface, oss ossutil.OSSInterface) UserServiceInterface {
+func NewUserService(userRepo repo.UserRepoInterface, oss ossutil.OSSInterface) *UserService {
 	return &UserService{
 		userRepo: userRepo,
 		oss:      oss,

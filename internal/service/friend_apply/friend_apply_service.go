@@ -77,7 +77,7 @@ func NewFriendApplyService(
 	friendApplyRepo repo.FriendApplyRepoInterface,
 	friendRepo friend_repo.FriendRepoInterface,
 	userRepo user.UserRepoInterface,
-) FriendApplyServiceInterface {
+) *FriendApplyService {
 	return &FriendApplyService{
 		friendApplyRepo: friendApplyRepo,
 		friendRepo:      friendRepo,
