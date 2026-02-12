@@ -15,3 +15,13 @@ const (
 	APPLY_NOT_BELONG_TO_USER = "申请不属于该用户, 无权处理"
 	APPLY_ALREADY_DEAL       = "申请已被处理"
 )
+
+const (
+	GROUP_IS_NOT_EXIST           = "群组不存在"
+	GROUP_DISSOLVE_NO_PERMISSION = "解散群组无权限"
+	GROUP_NOT_EXISTS_USER        = "用户不在群组中"
+	GROUP_UPDATE_NO_PERMISSION   = "更新群信息无权限"
+	GROUP_NAME_TOO_LONG          = "群名称不能超过10个字"
+	GROUP_ANNOUNCEMENT_TOO_LONG  = "群公告不能超过200个字"
+	GROUP_IS_DISSOLVED           = "群组已解散"
+)

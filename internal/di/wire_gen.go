@@ -16,6 +16,7 @@ import (
 	"minichat/internal/repo/friend"
 	"minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/group"
+	"minichat/internal/repo/group_member"
 	"minichat/internal/repo/user"
 	friend2 "minichat/internal/service/friend"
 	friend_apply2 "minichat/internal/service/friend_apply"
@@ -41,8 +42,9 @@ func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	friendService := friend2.NewFriendService(friendRepo, userRepo)
 	friendHandler := friend3.NewFriendHandler(friendService)
 	groupRepo := group.NewGroupRepo(database)
-	groupService := group2.NewGroupService(groupRepo)
-	groupHandler := group3.NewGroupHandler(groupService)
+	groupMemberRepoInterface := group_member.NewGroupMemberRepo(database)
+	groupServiceInterface := group2.NewGroupService(groupRepo, groupMemberRepoInterface)
+	groupHandler := group3.NewGroupHandler(groupServiceInterface)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,
 		FriendApplyHandler: friendApplyHandler,
@@ -64,11 +66,14 @@ var FriendSet = wire.NewSet(friend.NewFriendRepo, wire.Bind(new(friend.FriendRep
 
 var FriendApplySet = wire.NewSet(friend_apply.NewFriendApplyRepo, wire.Bind(new(friend_apply.FriendApplyRepoInterface), new(*friend_apply.FriendApplyRepo)), friend_apply2.NewFriendApplyService, wire.Bind(new(friend_apply2.FriendApplyServiceInterface), new(*friend_apply2.FriendApplyService)), friend_apply3.NewUserHandler)
 
-var GroupSet = wire.NewSet(group.NewGroupRepo, wire.Bind(new(group.GroupRepoInterface), new(*group.GroupRepo)), group2.NewGroupService, wire.Bind(new(group2.GroupServiceInterface), new(*group2.GroupService)), group3.NewGroupHandler)
+var GroupSet = wire.NewSet(group.NewGroupRepo, wire.Bind(new(group.GroupRepoInterface), new(*group.GroupRepo)), group2.NewGroupService, group3.NewGroupHandler)
+
+var GroupMemberSet = wire.NewSet(group_member.NewGroupMemberRepo)
 
 var HandlerProviderSet = wire.NewSet(
 	UserSet,
 	FriendSet,
 	FriendApplySet,
-	GroupSet, wire.Struct(new(HandlerProvider), "*"),
+	GroupSet,
+	GroupMemberSet, wire.Struct(new(HandlerProvider), "*"),
 )

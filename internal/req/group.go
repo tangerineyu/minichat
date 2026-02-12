@@ -5,3 +5,9 @@ type CreateGroupReq struct {
 	Announcement string `json:"announcement"`
 	Avatar       string `json:"avatar"`
 }
+
+type UpdateGroupInfoReq struct {
+	Name         string `json:"name"`
+	Announcement string `json:"announcement"`
+	Avatar       string `json:"avatar"`
+}

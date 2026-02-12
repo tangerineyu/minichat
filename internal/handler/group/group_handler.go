@@ -4,6 +4,7 @@ import (
 	"minichat/internal/handler/response"
 	"minichat/internal/req"
 	service "minichat/internal/service/group"
+	"strconv"
 
 	"github.com/gin-gonic/gin"
 )
@@ -30,13 +31,33 @@ func (g GroupHandler) CreateGroup(c *gin.Context) {
 }
 
 func (g GroupHandler) DissolveGroup(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	id := c.GetInt64("id")
+	groupIdStr := c.Param("group_id")
+	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
+	err := g.groupService.DissolveGroup(c.Request.Context(), id, groupId)
+	if err != nil {
+		response.Fail(c, 403, err.Error())
+		return
+	}
+	response.Success(c, "群组已解散")
 }
 
 func (g GroupHandler) UpdateGroupInfo(c *gin.Context) {
-	//TODO implement me
-	panic("implement me")
+	id := c.GetInt64("id")
+	groupIdStr := c.Param("group_id")
+	groupId, _ := strconv.ParseInt(groupIdStr, 10, 64)
+
+	var in req.UpdateGroupInfoReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Fail(c, 400, "invalid request")
+		return
+	}
+	updatedGroupInfo, err := g.groupService.UpdateGroupInfo(c.Request.Context(), groupId, id, in)
+	if err != nil {
+		response.Fail(c, 403, err.Error())
+		return
+	}
+	response.Success(c, updatedGroupInfo)
 }
 
 func (g GroupHandler) GetGroupInfo(c *gin.Context) {
