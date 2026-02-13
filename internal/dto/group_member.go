@@ -1,9 +1,12 @@
 package dto
 
+import "time"
+
 type GroupMemberInfo struct {
-	GroupId  int64  `json:"group_id"`
-	MemberId int64  `json:"member_id"`
-	Nickname string `json:"nickname"`
-	Role     int8   `json:"role"`
-	Status   int8   `json:"status"`
+	GroupId   int64     `json:"group_id"`
+	MemberId  int64     `json:"member_id"`
+	Nickname  string    `json:"nickname"`
+	Role      int8      `json:"role"`
+	Status    int8      `json:"status"`
+	EntryTime time.Time `json:"entry_time"`
 }

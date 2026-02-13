@@ -11,3 +11,7 @@ type UpdateGroupInfoReq struct {
 	Announcement string `json:"announcement"`
 	Avatar       string `json:"avatar"`
 }
+
+type AddGroupMembersReq struct {
+	UserIds []int64 `json:"user_ids"`
+}

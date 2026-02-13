@@ -11,6 +11,17 @@ type GroupMemberRepo struct {
 	db *gorm.DB
 }
 
+func (g *GroupMemberRepo) GetGroupMembers(ctx context.Context, groupId int64) ([]*model.GroupMember, error) {
+	var groupMembers []*model.GroupMember
+	err := g.db.WithContext(ctx).Model(&model.GroupMember{}).
+		Where("group_id = ?", groupId).
+		Find(&groupMembers).Error
+	if err != nil {
+		return nil, err
+	}
+	return groupMembers, nil
+}
+
 func (g *GroupMemberRepo) GetMemberById(ctx context.Context, memberId, groupId int64) (*model.GroupMember, error) {
 	var groupMemberInfo model.GroupMember
 	err := g.db.WithContext(ctx).Model(&model.GroupMember{}).

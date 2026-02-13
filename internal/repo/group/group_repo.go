@@ -3,8 +3,10 @@ package group
 import (
 	"context"
 	"minichat/internal/model"
+	"time"
 
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 var _ GroupRepoInterface = (*GroupRepo)(nil)
@@ -13,13 +15,36 @@ type GroupRepo struct {
 	db *gorm.DB
 }
 
+func (g *GroupRepo) AddGroupMembers(ctx context.Context, operatorId, groupId int64, userIds []int64) error {
+	return g.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		var members []model.GroupMember
+		for _, uid := range userIds {
+			members = append(members, model.GroupMember{
+				GroupID:   groupId,
+				UserID:    uid,
+				InviterID: operatorId,
+				Role:      0,
+				Status:    0,
+			})
+		}
+		return tx.Clauses(clause.OnConflict{
+			Columns: []clause.Column{{Name: "group_id"}, {Name: "user_id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"status":     0,
+				"role":       0,
+				"updated_at": time.Now(),
+			}),
+		}).Create(&members).Error
+	})
+}
+
 func (g *GroupRepo) UpdateGroupInfo(ctx context.Context, groupId int64, in map[string]interface{}) error {
 	return g.db.WithContext(ctx).Model(&model.Group{}).Where("id=?", groupId).Updates(in).Error
 }
 
 func (g *GroupRepo) GetGroupById(ctx context.Context, groupId int64) (*model.Group, error) {
 	var group *model.Group
-	if err := g.db.WithContext(ctx).Where("id = ?", groupId).First(&group).Error; err != nil {
+	if err := g.db.WithContext(ctx).Where("id = ? AND status = ?", groupId, 0).First(&group).Error; err != nil {
 		return nil, err
 	}
 	return group, nil

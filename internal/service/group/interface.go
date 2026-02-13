@@ -12,4 +12,8 @@ type GroupServiceInterface interface {
 	DissolveGroup(ctx context.Context, ownerId int64, groupId int64) error
 
 	UpdateGroupInfo(ctx context.Context, groupId int64, operatorId int64, in req.UpdateGroupInfoReq) (*dto.GroupInfo, error)
+
+	GetGroupInfo(ctx context.Context, groupId int64, userId int64) (*dto.GroupDetailInfo, error)
+
+	AddGroupMembers(ctx context.Context, operatorId int64, groupId int64, userIds []int64) (*dto.GroupAddStatus, error)
 }

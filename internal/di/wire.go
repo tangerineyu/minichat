@@ -11,6 +11,7 @@ import (
 	friendRepo "minichat/internal/repo/friend"
 	friendApplyRepo "minichat/internal/repo/friend_apply"
 	groupRepo "minichat/internal/repo/group"
+	groupApplyRepo "minichat/internal/repo/group_apply"
 	groupMemberRepo "minichat/internal/repo/group_member"
 	userRepo "minichat/internal/repo/user"
 	friendService "minichat/internal/service/friend"
@@ -73,12 +74,17 @@ var GroupMemberSet = wire.NewSet(
 	groupMemberRepo.NewGroupMemberRepo,
 	//wire.Bind(new(groupMemberRepo.GroupMemberRepoInterface), new(*groupMemberRepo.GroupMemberRepo)),
 )
+var GroupApplySet = wire.NewSet(
+	// repo
+	groupApplyRepo.NewGroupApplyRepo,
+)
 var HandlerProviderSet = wire.NewSet(
 	UserSet,
 	FriendSet,
 	FriendApplySet,
 	GroupSet,
 	GroupMemberSet,
+	GroupApplySet,
 	wire.Struct(new(HandlerProvider), "*"),
 )
 
