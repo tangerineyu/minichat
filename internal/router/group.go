@@ -2,7 +2,7 @@ package router
 
 import "minichat/internal/di"
 
-func SetupGroupRoutes(appRouterGroup *AppRouterGroup, h *di.HandlerProvider) {
+func setupGroupRoutes(appRouterGroup *AppRouterGroup, h *di.HandlerProvider) {
 	if h == nil || h.GroupHandler == nil {
 		return
 	}

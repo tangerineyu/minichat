@@ -19,6 +19,4 @@ type GroupHandlerInterface interface {
 	DeleteGroupMember(c *gin.Context)
 	//获取群成员列表
 	GetGroupMemberList(c *gin.Context)
-	//处理群成员申请
-	DealGroupApply(c *gin.Context)
 }

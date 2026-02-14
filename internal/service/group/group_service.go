@@ -24,21 +24,6 @@ type GroupService struct {
 	groupApplyRepo  groupApplyRepo.GroupApplyRepoInterface
 }
 
-func (g *GroupService) validateOperator(ctx context.Context, operatorId int64, groupId int64) error {
-	operator, err := g.groupMemberRepo.GetMemberById(ctx, operatorId, groupId)
-	if err != nil {
-		return errors.New(common.GROUP_NOT_EXISTS_USER)
-	}
-	if operator.Status == 2 {
-		return errors.New(common.GROUP_NOT_EXISTS_USER)
-	}
-	// 如果是管理员和群主都可以操作
-	if operator.Role == 1 || operator.Role == 2 {
-		return nil
-	}
-	return errors.New(common.GROUP_ADD_MEMBER_NO_PERMISSION)
-}
-
 func (g *GroupService) AddGroupMembers(ctx context.Context, operatorId int64, groupId int64, userIds []int64) (*dto.GroupAddStatus, error) {
 	// 先确认操作者是群内成员（且未退群）
 	operator, err := g.groupMemberRepo.GetMemberById(ctx, operatorId, groupId)
@@ -46,7 +31,21 @@ func (g *GroupService) AddGroupMembers(ctx context.Context, operatorId int64, gr
 		return nil, errors.New(common.GROUP_NOT_EXISTS_USER)
 	}
 
-	// 管理员/群主：直接拉人进群
+	// 获取群信息（为了拿 JoinMode）
+	group, err := g.groupRepo.GetGroupById(ctx, groupId)
+	if err != nil {
+		return nil, errors.New(common.GROUP_IS_NOT_EXIST)
+	}
+	if group.Status != 0 {
+		return nil, errors.New(common.GROUP_IS_DISSOLVED)
+	}
+
+	// JoinMode：0-直接加入, 1-需审核, 2-禁止加入
+	if group.JoinMode == 2 {
+		return nil, errors.New("该群已禁止加入")
+	}
+
+	// 管理员/群主：直接拉人进群（不受 JoinMode 限制）
 	if operator.Role == 1 || operator.Role == 2 {
 		if err := g.groupRepo.AddGroupMembers(ctx, operatorId, groupId, userIds); err != nil {
 			return nil, err
@@ -58,8 +57,21 @@ func (g *GroupService) AddGroupMembers(ctx context.Context, operatorId int64, gr
 		}, nil
 	}
 
-	// 普通成员：创建入群申请，等待管理员/群主审核
-	// 当前实现按 userId 逐条创建申请（不改表结构）。
+	// 普通成员：
+	// - 群允许自由加入：直接拉进群
+	// - 群需要审核：创建入群申请
+	if group.JoinMode == 0 {
+		if err := g.groupRepo.AddGroupMembers(ctx, operatorId, groupId, userIds); err != nil {
+			return nil, err
+		}
+		return &dto.GroupAddStatus{
+			Status:       dto.GroupAddJoined,
+			AddedUserIds: userIds,
+			Msg:          "已直接加入群聊",
+		}, nil
+	}
+
+	// group.JoinMode == 1：需审核
 	applyIds := make([]int64, 0, len(userIds))
 	for _, userId := range userIds {
 		reason := fmt.Sprintf("邀请用户 %d 加入群聊", userId)
@@ -192,6 +204,7 @@ func (g *GroupService) CreateGroup(ctx context.Context, ownerId int64, in req.Cr
 		Name:         in.Name,
 		Announcement: in.Announcement,
 		Avatar:       in.Avatar,
+		JoinMode:     0, // 默认：直接加入
 	}
 	err := g.groupRepo.CreateGroup(ctx, newGroup)
 	if err != nil {

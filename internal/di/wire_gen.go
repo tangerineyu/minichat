@@ -12,6 +12,7 @@ import (
 	friend3 "minichat/internal/handler/friend"
 	friend_apply3 "minichat/internal/handler/friend_apply"
 	group3 "minichat/internal/handler/group"
+	group_apply3 "minichat/internal/handler/group_apply"
 	user3 "minichat/internal/handler/user"
 	"minichat/internal/repo/friend"
 	"minichat/internal/repo/friend_apply"
@@ -22,6 +23,7 @@ import (
 	friend2 "minichat/internal/service/friend"
 	friend_apply2 "minichat/internal/service/friend_apply"
 	group2 "minichat/internal/service/group"
+	group_apply2 "minichat/internal/service/group_apply"
 	user2 "minichat/internal/service/user"
 )
 
@@ -47,11 +49,14 @@ func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	groupApplyRepoInterface := group_apply.NewGroupApplyRepo(database)
 	groupServiceInterface := group2.NewGroupService(groupRepo, groupMemberRepoInterface, groupApplyRepoInterface)
 	groupHandler := group3.NewGroupHandler(groupServiceInterface)
+	groupApplyServiceInterface := group_apply2.NewGroupApplyService(groupApplyRepoInterface, groupMemberRepoInterface)
+	groupApplyHandler := group_apply3.NewGroupApplyHandler(groupApplyServiceInterface)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,
 		FriendApplyHandler: friendApplyHandler,
 		FriendHandler:      friendHandler,
 		GroupHandler:       groupHandler,
+		GroupApplyHandler:  groupApplyHandler,
 	}
 	return handlerProvider, nil
 }
@@ -72,7 +77,7 @@ var GroupSet = wire.NewSet(group.NewGroupRepo, wire.Bind(new(group.GroupRepoInte
 
 var GroupMemberSet = wire.NewSet(group_member.NewGroupMemberRepo)
 
-var GroupApplySet = wire.NewSet(group_apply.NewGroupApplyRepo)
+var GroupApplySet = wire.NewSet(group_apply.NewGroupApplyRepo, group_apply2.NewGroupApplyService, group_apply3.NewGroupApplyHandler)
 
 var HandlerProviderSet = wire.NewSet(
 	UserSet,

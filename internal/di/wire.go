@@ -7,6 +7,7 @@ import (
 	friendHandler "minichat/internal/handler/friend"
 	friendApplyHandler "minichat/internal/handler/friend_apply"
 	groupHandler "minichat/internal/handler/group"
+	groupApplyHandler "minichat/internal/handler/group_apply"
 	userHandler "minichat/internal/handler/user"
 	friendRepo "minichat/internal/repo/friend"
 	friendApplyRepo "minichat/internal/repo/friend_apply"
@@ -17,6 +18,7 @@ import (
 	friendService "minichat/internal/service/friend"
 	friendApplyService "minichat/internal/service/friend_apply"
 	groupService "minichat/internal/service/group"
+	groupApplyService "minichat/internal/service/group_apply"
 	userService "minichat/internal/service/user"
 
 	"github.com/google/wire"
@@ -77,6 +79,10 @@ var GroupMemberSet = wire.NewSet(
 var GroupApplySet = wire.NewSet(
 	// repo
 	groupApplyRepo.NewGroupApplyRepo,
+
+	groupApplyService.NewGroupApplyService,
+
+	groupApplyHandler.NewGroupApplyHandler,
 )
 var HandlerProviderSet = wire.NewSet(
 	UserSet,

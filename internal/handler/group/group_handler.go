@@ -15,10 +15,6 @@ type GroupHandler struct {
 	groupService service.GroupServiceInterface
 }
 
-func (g *GroupHandler) DealGroupApply(c *gin.Context) {
-
-}
-
 func (g *GroupHandler) CreateGroup(c *gin.Context) {
 	var in req.CreateGroupReq
 	if err := c.ShouldBindJSON(&in); err != nil {

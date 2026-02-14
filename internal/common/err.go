@@ -25,4 +25,6 @@ const (
 	GROUP_ANNOUNCEMENT_TOO_LONG    = "群公告不能超过200个字"
 	GROUP_IS_DISSOLVED             = "群组已解散"
 	GROUP_ADD_MEMBER_NO_PERMISSION = "添加群成员无权限"
+	GROUP_APPLY_IS_NOT_EXIST       = "群申请不存在"
+	GROUP_APPLY_ALREADY_PROCESSED  = "群申请已被处理"
 )

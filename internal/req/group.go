@@ -15,3 +15,8 @@ type UpdateGroupInfoReq struct {
 type AddGroupMembersReq struct {
 	UserIds []int64 `json:"user_ids"`
 }
+
+type DealWithGroupApplyReq struct {
+	ApplyId int64 `json:"apply_id"`
+	Status  int8  `json:"status" comment:"待处理0, 同意 1，拒绝 2"`
+}
