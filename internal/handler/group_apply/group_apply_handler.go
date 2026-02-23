@@ -71,6 +71,6 @@ func (g *GroupApplyHandler) DealGroupApply(c *gin.Context) {
 	}
 	response.Success(c, "处理成功")
 }
-func NewGroupApplyHandler(groupApplyService groupApplyService.GroupApplyServiceInterface) *GroupApplyHandler {
+func NewGroupApplyHandler(groupApplyService groupApplyService.GroupApplyServiceInterface) GroupApplyHandlerInterface {
 	return &GroupApplyHandler{groupApplyService: groupApplyService}
 }

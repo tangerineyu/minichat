@@ -8,17 +8,21 @@ import (
 	friendApplyHandler "minichat/internal/handler/friend_apply"
 	groupHandler "minichat/internal/handler/group"
 	groupApplyHandler "minichat/internal/handler/group_apply"
+	messageHandler "minichat/internal/handler/message"
 	userHandler "minichat/internal/handler/user"
+	wsHandler "minichat/internal/handler/ws"
 	friendRepo "minichat/internal/repo/friend"
 	friendApplyRepo "minichat/internal/repo/friend_apply"
 	groupRepo "minichat/internal/repo/group"
 	groupApplyRepo "minichat/internal/repo/group_apply"
 	groupMemberRepo "minichat/internal/repo/group_member"
+	messageRepo "minichat/internal/repo/message"
 	userRepo "minichat/internal/repo/user"
 	friendService "minichat/internal/service/friend"
 	friendApplyService "minichat/internal/service/friend_apply"
 	groupService "minichat/internal/service/group"
 	groupApplyService "minichat/internal/service/group_apply"
+	messageService "minichat/internal/service/message"
 	userService "minichat/internal/service/user"
 
 	"github.com/google/wire"
@@ -84,6 +88,20 @@ var GroupApplySet = wire.NewSet(
 
 	groupApplyHandler.NewGroupApplyHandler,
 )
+
+var MessageSet = wire.NewSet(
+	// repo
+	messageRepo.NewMessageRepo,
+
+	// service/handler
+	messageService.NewMessageService,
+	messageHandler.NewMessageHandler,
+)
+
+var WSSet = wire.NewSet(
+	wsHandler.NewWSHandler,
+)
+
 var HandlerProviderSet = wire.NewSet(
 	UserSet,
 	FriendSet,
@@ -91,6 +109,8 @@ var HandlerProviderSet = wire.NewSet(
 	GroupSet,
 	GroupMemberSet,
 	GroupApplySet,
+	MessageSet,
+	WSSet,
 	wire.Struct(new(HandlerProvider), "*"),
 )
 

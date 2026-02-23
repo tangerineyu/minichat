@@ -13,17 +13,21 @@ import (
 	friend_apply3 "minichat/internal/handler/friend_apply"
 	group3 "minichat/internal/handler/group"
 	group_apply3 "minichat/internal/handler/group_apply"
+	message3 "minichat/internal/handler/message"
 	user3 "minichat/internal/handler/user"
+	"minichat/internal/handler/ws"
 	"minichat/internal/repo/friend"
 	"minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/group"
 	"minichat/internal/repo/group_apply"
 	"minichat/internal/repo/group_member"
+	"minichat/internal/repo/message"
 	"minichat/internal/repo/user"
 	friend2 "minichat/internal/service/friend"
 	friend_apply2 "minichat/internal/service/friend_apply"
 	group2 "minichat/internal/service/group"
 	group_apply2 "minichat/internal/service/group_apply"
+	message2 "minichat/internal/service/message"
 	user2 "minichat/internal/service/user"
 )
 
@@ -50,13 +54,19 @@ func InitializeApp(database *gorm.DB) (*HandlerProvider, error) {
 	groupServiceInterface := group2.NewGroupService(groupRepo, groupMemberRepoInterface, groupApplyRepoInterface)
 	groupHandler := group3.NewGroupHandler(groupServiceInterface)
 	groupApplyServiceInterface := group_apply2.NewGroupApplyService(groupApplyRepoInterface, groupMemberRepoInterface)
-	groupApplyHandler := group_apply3.NewGroupApplyHandler(groupApplyServiceInterface)
+	groupApplyHandlerInterface := group_apply3.NewGroupApplyHandler(groupApplyServiceInterface)
+	messageRepoInterface := message.NewMessageRepo(database)
+	messageServiceInterface := message2.NewMessageService(messageRepoInterface, friendRepo, groupMemberRepoInterface)
+	messageHandlerInterface := message3.NewMessageHandler(messageServiceInterface)
+	wsHandlerInterface := ws.NewWSHandler(messageServiceInterface)
 	handlerProvider := &HandlerProvider{
 		UserHandler:        userHandler,
 		FriendApplyHandler: friendApplyHandler,
 		FriendHandler:      friendHandler,
 		GroupHandler:       groupHandler,
-		GroupApplyHandler:  groupApplyHandler,
+		GroupApplyHandler:  groupApplyHandlerInterface,
+		MessageHandler:     messageHandlerInterface,
+		WSHandler:          wsHandlerInterface,
 	}
 	return handlerProvider, nil
 }
@@ -79,11 +89,17 @@ var GroupMemberSet = wire.NewSet(group_member.NewGroupMemberRepo)
 
 var GroupApplySet = wire.NewSet(group_apply.NewGroupApplyRepo, group_apply2.NewGroupApplyService, group_apply3.NewGroupApplyHandler)
 
+var MessageSet = wire.NewSet(message.NewMessageRepo, message2.NewMessageService, message3.NewMessageHandler)
+
+var WSSet = wire.NewSet(ws.NewWSHandler)
+
 var HandlerProviderSet = wire.NewSet(
 	UserSet,
 	FriendSet,
 	FriendApplySet,
 	GroupSet,
 	GroupMemberSet,
-	GroupApplySet, wire.Struct(new(HandlerProvider), "*"),
+	GroupApplySet,
+	MessageSet,
+	WSSet, wire.Struct(new(HandlerProvider), "*"),
 )

@@ -5,7 +5,9 @@ import (
 	friendApplyHandler "minichat/internal/handler/friend_apply"
 	groupHandler "minichat/internal/handler/group"
 	groupApplyHandler "minichat/internal/handler/group_apply"
+	messageHandler "minichat/internal/handler/message"
 	userHandler "minichat/internal/handler/user"
+	wsHandler "minichat/internal/handler/ws"
 )
 
 type HandlerProvider struct {
@@ -13,5 +15,7 @@ type HandlerProvider struct {
 	FriendApplyHandler *friendApplyHandler.FriendApplyHandler
 	FriendHandler      *friendHandler.FriendHandler
 	GroupHandler       *groupHandler.GroupHandler
-	GroupApplyHandler  *groupApplyHandler.GroupApplyHandler
+	GroupApplyHandler  groupApplyHandler.GroupApplyHandlerInterface
+	MessageHandler     messageHandler.MessageHandlerInterface
+	WSHandler          wsHandler.WSHandlerInterface
 }

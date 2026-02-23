@@ -57,6 +57,7 @@ func InitDB() (*gorm.DB, error) {
 		&model.Group{},
 		&model.GroupMember{},
 		&model.GroupApply{},
+		&model.Message{},
 	); err != nil {
 		return nil, err
 	}

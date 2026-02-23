@@ -5,6 +5,7 @@ import (
 	"minichat/internal/db"
 	"minichat/internal/di"
 	"minichat/internal/router"
+	"minichat/internal/websocket"
 	"minichat/util/logger"
 
 	"github.com/gin-gonic/gin"
@@ -36,6 +37,8 @@ func main() {
 	if err != nil {
 		zap.L().Fatal("initialize app failed", zap.Error(err))
 	}
+
+	go websocket.GlobalHub.Run()
 
 	r := gin.New()
 	router.SetupRouter(r, providers)
