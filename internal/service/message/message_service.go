@@ -121,11 +121,36 @@ func (m *MessageService) SendMessage(ctx context.Context, senderId int64, receiv
 	if err := m.messageRepo.SendMessage(ctx, senderId, msg); err != nil {
 		return nil, err
 	}
-	// websocket 消息推送等后续处理可在这里进行（异步）
+
+	// websocket 消息推送：
+	//   - 私聊：推给对方 receiverId（在线则收到，不在线忽略）
+	//   - 群聊：receiverId 表示 groupId，需要推给所有群成员 userId
 	pushData, _ := json.Marshal(msg)
-	go func(targetId int64, data []byte) {
-		websocket.GlobalHub.PushMessage(targetId, data)
-	}(receiverId, pushData)
+
+	switch sessionType {
+	case 1:
+		go websocket.GlobalHub.PushMessage(receiverId, pushData)
+	case 2:
+		// 群聊：查成员列表并逐个推送
+		if m.groupMemberRepo != nil {
+			members, err := m.groupMemberRepo.GetGroupMembers(ctx, receiverId)
+			if err == nil {
+				for _, mem := range members {
+					if mem == nil {
+						continue
+					}
+					// 可选：是否回推给自己。
+					// 这里选择“也推给自己”，方便多端/前端统一用推送来更新界面。
+					if mem.Status != 0 {
+						continue
+					}
+					uid := mem.UserID
+					go websocket.GlobalHub.PushMessage(uid, pushData)
+				}
+			}
+		}
+	}
+
 	return msg, nil
 }
 
