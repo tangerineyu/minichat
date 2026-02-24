@@ -114,3 +114,13 @@ func (h *Hub) PushMessage(userId int64, message []byte) {
 		}
 	}
 }
+
+// PushMessages 批量推送到多个 userId。
+//
+// 注意：这里不做“全局锁下循环推送”，避免一次 group fan-out 长时间占锁。
+// 对单个 user 的投递仍然复用 PushMessage 的保护逻辑。
+func (h *Hub) PushMessages(userIDs []int64, message []byte) {
+	for _, uid := range userIDs {
+		h.PushMessage(uid, message)
+	}
+}

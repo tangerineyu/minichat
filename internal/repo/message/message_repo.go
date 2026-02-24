@@ -7,11 +7,26 @@ import (
 	"gorm.io/gorm"
 )
 
+var _ MessageRepoInterface = (*MessageRepo)(nil)
+
 type MessageRepo struct {
 	db *gorm.DB
 }
 
-var _ MessageRepoInterface = (*MessageRepo)(nil)
+func (m *MessageRepo) WithdrawMessage(ctx context.Context, msgId int64) error {
+	return m.db.WithContext(ctx).Model(model.Message{}).
+		Where("id = ?", msgId).
+		Updates(map[string]interface{}{
+			"status":  1,  // 1 表示已撤回
+			"content": "", //清空内容
+		}).Error
+}
+
+func (m *MessageRepo) GetMessageById(ctx context.Context, msgId int64) (*model.Message, error) {
+	var msg *model.Message
+	err := m.db.WithContext(ctx).Where("id=?", msgId).First(&msg).Error
+	return msg, err
+}
 
 func (m *MessageRepo) SendMessage(ctx context.Context, senderId int64, msg *model.Message) error {
 	// 兜底确保 senderId 一致

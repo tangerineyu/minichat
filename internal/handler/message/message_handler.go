@@ -13,6 +13,20 @@ type MessageHandler struct {
 	messageService messageService.MessageServiceInterface
 }
 
+func (m *MessageHandler) WithdrawMessage(c *gin.Context) {
+	var in req.WithDrawMsgReq
+	if err := c.ShouldBindJSON(&in); err != nil {
+		response.Fail(c, 400, "invalid request")
+		return
+	}
+	id := c.GetInt64("id")
+	if err := m.messageService.WithdrawMessage(c.Request.Context(), id, in); err != nil {
+		response.ServerError(c, err)
+		return
+	}
+	response.Success(c, "撤回成功")
+}
+
 func (m *MessageHandler) GetMessageHistory(c *gin.Context) {
 	userId := c.GetInt64("id")
 	var in req.GetMessageHistoryReq

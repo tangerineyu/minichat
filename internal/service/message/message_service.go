@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"minichat/internal/event"
 	"minichat/internal/req"
 	"minichat/internal/websocket"
 	"strconv"
@@ -19,13 +20,45 @@ import (
 	"gorm.io/gorm"
 )
 
+var _ MessageServiceInterface = (*MessageService)(nil)
+
 type MessageService struct {
 	messageRepo     messageRepo.MessageRepoInterface
 	friendRepo      friendRepo.FriendRepoInterface
 	groupMemberRepo groupMemberRepo.GroupMemberRepoInterface
 }
 
-var _ MessageServiceInterface = (*MessageService)(nil)
+func (m *MessageService) WithdrawMessage(ctx context.Context, operatorId int64, in req.WithDrawMsgReq) error {
+	msg, err := m.messageRepo.GetMessageById(ctx, in.MsgId)
+	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return errors.New("消息不存在")
+		}
+		return err
+	}
+	if msg.SenderID != operatorId {
+		return errors.New("只能撤回自己的消息")
+	}
+	// 时间校验
+	if time.Since(msg.CreatedAt) > 2*time.Minute {
+		return errors.New("发送时间超过2分钟，无法撤回")
+	}
+	// 更新数据库
+	if err := m.messageRepo.WithdrawMessage(ctx, in.MsgId); err != nil {
+		return err
+	}
+
+	envelope := event.WsEnvelope{
+		TargetID: in.ReceiverId,
+		Event:    "chat.message.withdraw",
+		Data: event.ChatWithdrawPayload{
+			MsgID:      in.MsgId,
+			WithdrawBy: operatorId,
+		},
+	}
+	event.GlobalBus.Publish(ctx, event.EventMessageWithdraw, envelope)
+	return nil
+}
 
 func (m *MessageService) GetMessageHistory(ctx context.Context, userId int64, in req.GetMessageHistoryReq) ([]*model.Message, error) {
 	if userId <= 0 {
@@ -123,8 +156,8 @@ func (m *MessageService) SendMessage(ctx context.Context, senderId int64, receiv
 	}
 
 	// websocket 消息推送：
-	//   - 私聊：推给对方 receiverId（在线则收到，不在线忽略）
-	//   - 群聊：receiverId 表示 groupId，需要推给所有群成员 userId
+	//   私聊：推给对方 receiverId（在线则收到，不在线忽略）
+	//   群聊：receiverId 表示 groupId，需要推给所有群成员 userId
 	pushData, _ := json.Marshal(msg)
 
 	switch sessionType {
@@ -139,7 +172,7 @@ func (m *MessageService) SendMessage(ctx context.Context, senderId int64, receiv
 					if mem == nil {
 						continue
 					}
-					// 可选：是否回推给自己。
+					// 是否回推给自己。
 					// 这里选择“也推给自己”，方便多端/前端统一用推送来更新界面。
 					if mem.Status != 0 {
 						continue

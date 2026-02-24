@@ -15,3 +15,9 @@ type GetMessageHistoryReq struct {
 	SessionType int8  `form:"session_type" json:"session_type" binding:"required"` // 1私聊, 2群聊
 	CursorPageReq
 }
+
+type WithDrawMsgReq struct {
+	MsgId       int64 `json:"msg_id" binding:"required"`
+	ReceiverId  int64 `json:"receiver_id" binding:"required"`
+	SessionType int8  `json:"session_type" binding:"required"`
+}

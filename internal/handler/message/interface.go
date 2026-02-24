@@ -7,4 +7,6 @@ type MessageHandlerInterface interface {
 	SendMessage(c *gin.Context)
 	// GetMessageHistory 获取消息历史记录
 	GetMessageHistory(c *gin.Context)
+	// WithdrawMessage 撤回消息
+	WithdrawMessage(c *gin.Context)
 }

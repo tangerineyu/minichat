@@ -5,6 +5,7 @@ import (
 	"errors"
 	"minichat/internal/common"
 	"minichat/internal/dto"
+	"minichat/internal/event"
 	friend_repo "minichat/internal/repo/friend"
 	repo "minichat/internal/repo/friend_apply"
 	"minichat/internal/repo/user"
@@ -69,8 +70,30 @@ func (s *FriendApplyService) SendFriendApply(ctx context.Context, fromUserId int
 	if fromUserId == in.ToUserId {
 		return errors.New(common.APPLY_FRIEND_SELF)
 	}
-	_, err := s.friendApplyRepo.CreateFriendApply(ctx, fromUserId, in.ToUserId, in.Message)
-	return err
+
+	apply, err := s.friendApplyRepo.CreateFriendApply(ctx, fromUserId, in.ToUserId, in.Message)
+	if err != nil {
+		zap.L().Error("CreateFriendApply failed", zap.Error(err))
+		return err
+	}
+
+	// 用事件驱动 websocket 推送：
+	// 1) service 只负责“领域动作”（创建申请）+ 发布事件
+	// 2) websocket/subscriber 负责把事件转为 ws frame 并推给在线用户
+	envelope := event.WsEnvelope{
+		TargetID: in.ToUserId,
+		Event:    "friend.apply",
+		Data: event.FriendApplyPayload{
+			ApplyID:   apply.ID,
+			Applicant: fromUserId,
+			Msg:       in.Message,
+		},
+	}
+	// Publish 是异步的（EventBus 内部会起 goroutine 调 handler）。
+	// 这里不把推送失败当作接口失败：创建申请成功即可返回。
+	event.GlobalBus.Publish(ctx, event.EventFriendApplyNew, envelope)
+
+	return nil
 }
 
 func NewFriendApplyService(

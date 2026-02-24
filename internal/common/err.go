@@ -28,3 +28,7 @@ const (
 	GROUP_APPLY_IS_NOT_EXIST       = "群申请不存在"
 	GROUP_APPLY_ALREADY_PROCESSED  = "群申请已被处理"
 )
+
+const (
+	MESSAGE_PAYLOAD_TYPE_ERROR = "消息载荷类型错误"
+)

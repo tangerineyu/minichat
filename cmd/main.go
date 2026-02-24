@@ -38,6 +38,8 @@ func main() {
 		zap.L().Fatal("initialize app failed", zap.Error(err))
 	}
 
+	// 事件订阅器一定要初始化，否则 event.Publish 不会触发任何 websocket 推送。
+	websocket.InitSubscriber()
 	go websocket.GlobalHub.Run()
 
 	r := gin.New()
